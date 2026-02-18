@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>mrcloud</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Material Icons -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<style>
+    body {
+        margin: 0;
+        background: #121212;
+        font-family: "Roboto", sans-serif;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Tabs */
+    .tabs {
+        margin-top: 40px;
+        display: flex;
+        gap: 10px;
+        background: #1E1E1E;
+        padding: 6px;
+        border-radius: 12px;
+    }
+
+    .tab {
+        padding: 10px 22px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 15px;
+        transition: 0.2s;
+        user-select: none;
+    }
+
+    .tab.active {
+        background: #2962FF;
+    }
+
+    /* Content */
+    .content {
+        margin-top: 30px;
+        width: 90%;
+        max-width: 700px;
+    }
+
+    /* Flat items */
+    .post, .file-item {
+        background: #1A1A1A;
+        padding: 16px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .file-icon {
+        font-size: 32px;
+        color: #90CAF9;
+    }
+
+    .upload-btn {
+        margin-top: 15px;
+        background: #2962FF;
+        padding: 10px 18px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: inline-block;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .file-item .material-icons {
+        font-size: 22px;
+    }
+</style>
+</head>
+<body>
+
+<!-- Tabs -->
+<div class="tabs">
+    <div class="tab active" id="tabPosts">Публикации</div>
+    <div class="tab" id="tabFiles">Файлы</div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+    <!-- Posts -->
+    <div id="postsSection">
+        <div class="post">Здесь будут публикации…</div>
+    </div>
+
+    <!-- Files -->
+    <div id="filesSection" class="hidden">
+        <div id="fileList"></div>
+
+        <!-- Admin upload -->
+        <div id="adminUpload" class="hidden">
+            <label class="upload-btn">
+                Загрузить файл
+                <input type="file" id="fileInput" class="hidden">
+            </label>
+        </div>
+    </div>
+
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js"></script>
+
+<script>
+/* ------------------ FIREBASE ------------------ */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD7FrrFe2A8oynmKXqBs7bZEq4uIy2C_RU",
+  authDomain: "mr-chay-239db.firebaseapp.com",
+  projectId: "mr-chay-239db",
+  storageBucket: "mr-chay-239db.appspot.com",
+  messagingSenderId: "922540749815",
+  appId: "1:922540749815:web:454db43196a170289274f2",
+  measurementId: "G-JQNS6K6K0R"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+/* ------------------ TABS ------------------ */
+
+const tabPosts = document.getElementById("tabPosts");
+const tabFiles = document.getElementById("tabFiles");
+
+const postsSection = document.getElementById("postsSection");
+const filesSection = document.getElementById("filesSection");
+
+tabPosts.onclick = () => {
+    tabPosts.classList.add("active");
+    tabFiles.classList.remove("active");
+    postsSection.classList.remove("hidden");
+    filesSection.classList.add("hidden");
+};
+
+tabFiles.onclick = () => {
+    tabFiles.classList.add("active");
+    tabPosts.classList.remove("active");
+    postsSection.classList.add("hidden");
+    filesSection.classList.remove("hidden");
+};
+
+/* ------------------ ADMIN (Ctrl + Shift + X) ------------------ */
+
+let isAdmin = false;
+
+document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "x") {
+        const pass = prompt("Введите пароль администратора:");
+        if (pass === "admin123") {
+            isAdmin = true;
+            document.getElementById("adminUpload").classList.remove("hidden");
+            alert("Админ режим активирован");
+            loadFiles();
+        }
+    }
+});
+
+/* ------------------ UPLOAD FILE ------------------ */
+
+document.getElementById("fileInput").addEventListener("change", async (e) => {
+    if (!isAdmin) return;
+
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const ref = storage.ref("files/" + file.name);
+    await ref.put(file);
+
+    const url = await ref.getDownloadURL();
+
+    await db.collection("files").add({
+        name: file.name,
+        url: url
+    });
+
+    loadFiles();
+});
+
+/* ------------------ LOAD FILES ------------------ */
+
+async function loadFiles() {
+    const list = document.getElementById("fileList");
+    list.innerHTML = "";
+
+    const snap = await db.collection("files").get();
+    snap.forEach(doc => {
+        const data = doc.data();
+
+        const div = document.createElement("div");
+        div.className = "file-item";
+
+        const icon = document.createElement("span");
+        icon.className = "material-icons file-icon";
+        icon.textContent = getFileIcon(data.name);
+
+        const name = document.createElement("div");
+        name.textContent = data.name;
+
+        div.appendChild(icon);
+        div.appendChild(name);
+
+        // Download
+        div.onclick = () => {
+            const downloadUrl = data.url + "&alt=media";
+            window.open(downloadUrl, "_blank");
+        };
+
+        // Delete (admin only)
+        if (isAdmin) {
+            const del = document.createElement("span");
+            del.className = "material-icons";
+            del.style.marginLeft = "auto";
+            del.style.cursor = "pointer";
+            del.style.color = "#EF5350";
+            del.textContent = "delete";
+
+            del.onclick = async (e) => {
+                e.stopPropagation();
+
+                if (!confirm("Удалить файл?")) return;
+
+                const ref = storage.refFromURL(data.url);
+                await ref.delete();
+
+                await db.collection("files").doc(doc.id).delete();
+
+                loadFiles();
+            };
+
+            div.appendChild(del);
+        }
+
+        list.appendChild(div);
+    });
+}
+
+function getFileIcon(name) {
+    const ext = name.split(".").pop().toLowerCase();
+    if (ext === "pdf") return "picture_as_pdf";
+    if (["png","jpg","jpeg","gif"].includes(ext)) return "image";
+    if (["zip","rar","7z"].includes(ext)) return "folder_zip";
+    if (["mp4","mov","avi"].includes(ext)) return "movie";
+    if (["txt","md"].includes(ext)) return "description";
+    return "insert_drive_file";
+}
+
+loadFiles();
+</script>
+
+</body>
+</html>
