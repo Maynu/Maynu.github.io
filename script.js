@@ -11,12 +11,8 @@ let isAdmin = false;
 // ===============================
 // Вкладки
 // ===============================
-document.getElementById("tabPosts").onclick = () => {
-    switchTab("posts");
-};
-document.getElementById("tabFiles").onclick = () => {
-    switchTab("files");
-};
+document.getElementById("tabPosts").onclick = () => switchTab("posts");
+document.getElementById("tabFiles").onclick = () => switchTab("files");
 
 function switchTab(tab) {
     document.getElementById("tabPosts").classList.toggle("active", tab === "posts");
@@ -55,21 +51,13 @@ async function uploadPost() {
 
     if (file) {
         const path = `posts/${Date.now()}_${file.name}`;
-        const { error: uploadError } = await client.storage.from("files").upload(path, file);
-        if (uploadError) {
-            console.error("Ошибка загрузки файла поста:", uploadError);
-            return;
-        }
-        const { data: publicData } = client.storage.from("files").getPublicUrl(path);
-        file_url = publicData.publicUrl;
+        await client.storage.from("files").upload(path, file);
+        const { data } = client.storage.from("files").getPublicUrl(path);
+        file_url = data.publicUrl;
         file_type = file.type;
     }
 
-    const { error } = await client.from("posts").insert([{ text, file_url, file_type }]);
-    if (error) {
-        console.error("Ошибка сохранения поста:", error);
-        return;
-    }
+    await client.from("posts").insert([{ text, file_url, file_type }]);
 
     document.getElementById("postText").value = "";
     document.getElementById("postFile").value = "";
@@ -81,15 +69,10 @@ async function uploadPost() {
 // Загрузка постов
 // ===============================
 async function loadPosts() {
-    const { data, error } = await client
+    const { data } = await client
         .from("posts")
         .select("*")
         .order("id", { ascending: false });
-
-    if (error) {
-        console.error("Ошибка загрузки постов:", error);
-        return;
-    }
 
     const list = document.getElementById("postsList");
     list.innerHTML = "";
@@ -100,9 +83,9 @@ async function loadPosts() {
 
         let media = "";
         if (post.file_url) {
-            if (post.file_type && post.file_type.startsWith("image")) {
+            if (post.file_type?.startsWith("image")) {
                 media = `<img src="${post.file_url}">`;
-            } else if (post.file_type && post.file_type.startsWith("video")) {
+            } else if (post.file_type?.startsWith("video")) {
                 media = `<video controls src="${post.file_url}"></video>`;
             } else {
                 media = `<a href="${post.file_url}" target="_blank">📄 Скачать файл</a>`;
@@ -112,11 +95,16 @@ async function loadPosts() {
         div.innerHTML = `
             <p>${post.text || ""}</p>
             ${media}
-            <div id="comments-${post.id}"></div>
 
-            <input id="nick-${post.id}" placeholder="Ваш ник">
-            <textarea id="comment-${post.id}" placeholder="Комментарий"></textarea>
-            <button onclick="addComment(${post.id})">Отправить</button>
+            <button class="comment-toggle" onclick="toggleCommentBox(${post.id})">💬</button>
+
+            <div id="comment-box-${post.id}" class="comment-box hidden">
+                <input id="nick-${post.id}" placeholder="Ваш ник">
+                <textarea id="comment-${post.id}" placeholder="Комментарий"></textarea>
+                <button onclick="addComment(${post.id})">Отправить</button>
+
+                <div id="comments-${post.id}" style="margin-top:10px;"></div>
+            </div>
         `;
 
         list.appendChild(div);
@@ -125,41 +113,39 @@ async function loadPosts() {
 }
 
 // ===============================
-// Комментарии
+// Открытие/закрытие меню комментариев
+// ===============================
+function toggleCommentBox(postId) {
+    const box = document.getElementById(`comment-box-${postId}`);
+    box.classList.toggle("hidden");
+}
+
+// ===============================
+// Добавление комментария
 // ===============================
 async function addComment(postId) {
-    const nickEl = document.getElementById(`nick-${postId}`);
-    const textEl = document.getElementById(`comment-${postId}`);
-
-    const nick = nickEl.value.trim();
-    const text = textEl.value.trim();
+    const nick = document.getElementById(`nick-${postId}`).value.trim();
+    const text = document.getElementById(`comment-${postId}`).value.trim();
 
     if (!nick || !text) return;
 
-    const { error } = await client
+    await client
         .from("comments")
         .insert([{ post_id: postId, text: `${nick}: ${text}` }]);
 
-    if (error) {
-        console.error("Ошибка добавления комментария:", error);
-        return;
-    }
-
-    textEl.value = "";
+    document.getElementById(`comment-${postId}`).value = "";
     loadComments(postId);
 }
 
+// ===============================
+// Загрузка комментариев
+// ===============================
 async function loadComments(postId) {
-    const { data, error } = await client
+    const { data } = await client
         .from("comments")
         .select("*")
         .eq("post_id", postId)
         .order("id");
-
-    if (error) {
-        console.error("Ошибка загрузки комментариев:", error);
-        return;
-    }
 
     const block = document.getElementById(`comments-${postId}`);
     block.innerHTML = "";
@@ -179,16 +165,7 @@ async function loadComments(postId) {
 }
 
 async function deleteComment(id, postId) {
-    const { error } = await client
-        .from("comments")
-        .delete()
-        .eq("id", id);
-
-    if (error) {
-        console.error("Ошибка удаления комментария:", error);
-        return;
-    }
-
+    await client.from("comments").delete().eq("id", id);
     loadComments(postId);
 }
 
@@ -200,23 +177,13 @@ async function uploadFile() {
     if (!file) return;
 
     const path = `files/${Date.now()}_${file.name}`;
-    const { error } = await client.storage.from("files").upload(path, file);
-
-    if (error) {
-        console.error("Ошибка загрузки файла:", error);
-        return;
-    }
+    await client.storage.from("files").upload(path, file);
 
     loadFiles();
 }
 
 async function loadFiles() {
-    const { data, error } = await client.storage.from("files").list("files");
-
-    if (error) {
-        console.error("Ошибка загрузки списка файлов:", error);
-        return;
-    }
+    const { data } = await client.storage.from("files").list("files");
 
     const list = document.getElementById("fileList");
     list.innerHTML = "";
