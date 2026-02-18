@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>mrcloud</title>
+<title>mr-cloud</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -63,24 +63,14 @@
         margin-top: 10px;
         border-radius: 8px;
         border: none;
-    }
-
-    button {
-        padding: 10px 18px;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        transition: 0.2s;
-    }
-
-    .hidden {
-        display: none;
+        background: #1c1c1c;
+        color: white;
     }
 
     .comment-toggle {
         background: #1c1c1c;
         border: 1px solid #333;
-        padding: 6px 12px;
+        padding: 8px 14px;
         border-radius: 6px;
         cursor: pointer;
         color: #bfbfbf;
@@ -89,23 +79,6 @@
     }
 
     .comment-toggle:hover {
-        background: #2a2a2a;
-        border-color: #444;
-        color: white;
-    }
-
-    .send-btn {
-        background: #1c1c1c;
-        border: 1px solid #333;
-        color: #bfbfbf;
-        padding: 8px 14px;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: 0.2s;
-        margin-top: 10px;
-    }
-
-    .send-btn:hover {
         background: #2a2a2a;
         border-color: #444;
         color: white;
@@ -137,6 +110,10 @@
         border: none;
         margin-top: 5px;
     }
+
+    .hidden {
+        display: none;
+    }
 </style>
 </head>
 <body>
@@ -153,7 +130,7 @@
         <div id="adminPostUpload" class="hidden">
             <textarea id="postText" placeholder="Текст публикации"></textarea>
             <input type="file" id="postFile">
-            <button class="send-btn" onclick="uploadPost()">Опубликовать</button>
+            <button class="comment-toggle" onclick="uploadPost()">Опубликовать</button>
         </div>
 
         <div id="postsList"></div>
@@ -163,7 +140,7 @@
     <div id="filesSection" class="hidden">
         <div id="adminUpload" class="hidden">
             <input type="file" id="fileInput">
-            <button class="send-btn" onclick="uploadFile()">Загрузить файл</button>
+            <button class="comment-toggle" onclick="uploadFile()">Загрузить файл</button>
         </div>
 
         <div id="fileList"></div>
