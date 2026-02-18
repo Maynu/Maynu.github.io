@@ -72,9 +72,17 @@ async function loadFiles() {
 
         div.innerHTML = `
             <p>${file.name}</p>
-            <a href="${url}" target="_blank" style="color:#4da3ff">Открыть</a>
             ${isAdmin ? `<button class="delete-btn" onclick="deleteFile('${filePath}')">Удалить</button>` : ""}
         `;
+
+        // Плитка скачивает файл
+        div.style.cursor = "pointer";
+        div.onclick = () => {
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = file.name;
+            a.click();
+        };
 
         container.appendChild(div);
     });
@@ -111,7 +119,7 @@ async function deletePost(id) {
 }
 
 // ===============================
-// КОММЕНТАРИИ (НОВАЯ ЛОГИКА)
+// КОММЕНТАРИИ
 // ===============================
 async function loadComments(postId, box) {
     const { data } = await client
