@@ -111,7 +111,7 @@ async function deletePost(id) {
 }
 
 // ===============================
-// КОММЕНТАРИИ
+// КОММЕНТАРИИ (НОВАЯ СИСТЕМА)
 // ===============================
 async function loadComments(postId, box) {
     const { data } = await client
@@ -126,6 +126,7 @@ async function loadComments(postId, box) {
         const div = document.createElement("div");
         div.className = "comment";
         div.innerHTML = `
+            <b>${c.name}</b>
             <p>${c.text}</p>
             <small>${c.created_at}</small>
         `;
@@ -133,25 +134,31 @@ async function loadComments(postId, box) {
     });
 }
 
-async function addComment(postId, input, box) {
-    const text = input.value.trim();
-    if (!text) return;
+async function addComment(postId, nameInput, textInput, box) {
+    const name = nameInput.value.trim();
+    const text = textInput.value.trim();
 
-    await client.from("comments").insert([{ post_id: postId, text }]);
+    if (!name || !text) return;
 
-    input.value = "";
+    await client.from("comments").insert([{ post_id: postId, name, text }]);
+
+    nameInput.value = "";
+    textInput.value = "";
+
     loadComments(postId, box);
 }
 
 function toggleComments(postId) {
     const box = document.getElementById(`comments_${postId}`);
-    const input = document.getElementById(`commentInput_${postId}`);
+    const form = document.getElementById(`commentForm_${postId}`);
 
     if (box.classList.contains("hidden")) {
         box.classList.remove("hidden");
+        form.classList.remove("hidden");
         loadComments(postId, box);
     } else {
         box.classList.add("hidden");
+        form.classList.add("hidden");
     }
 }
 
@@ -183,12 +190,18 @@ async function loadPosts() {
         div.innerHTML = `
             <p>${post.text}</p>
             ${media}
+
             <div class="comment-toggle" onclick="toggleComments(${post.id})">Комментарии</div>
 
             <div id="comments_${post.id}" class="comment-box hidden"></div>
 
-            <input id="commentInput_${post.id}" placeholder="Ваш комментарий...">
-            <button onclick="addComment(${post.id}, commentInput_${post.id}, comments_${post.id})">Отправить</button>
+            <div id="commentForm_${post.id}" class="hidden">
+                <input id="commentName_${post.id}" placeholder="Ваше имя">
+                <input id="commentText_${post.id}" placeholder="Ваш комментарий">
+                <button onclick="addComment(${post.id}, commentName_${post.id}, commentText_${post.id}, comments_${post.id})">
+                    Оставить комментарий
+                </button>
+            </div>
 
             ${isAdmin ? `<button class="delete-btn" onclick="deletePost(${post.id})">Удалить</button>` : ""}
         `;
