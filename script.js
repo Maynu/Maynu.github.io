@@ -1,58 +1,130 @@
 // ===============================
-// Supabase подключение
+// Supabase
 // ===============================
-const SUPABASE_URL = "https://atgmcttfsqpdhfdbfqkj.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0Z21jdHRmc3FwZGhmZGJmcWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNjg1NzMsImV4cCI6MjA4Njk0NDU3M30.VwGHqIXtsJZwA7hcpH2X1XrBDmT7TCt5xUgubhKB4Ns";
+const supabase = supabase.createClient(
+    "https://atgmcttfsqpdhfdbfqkj.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0Z21jdHRmc3FwZGhmZGJmcWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNjg1NzMsImV4cCI6MjA4Njk0NDU3M30.VwGHqIXtsJZwA7hcpH2X1XrBDmT7TCt5xUgubhKB4Ns"
+);
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let isAdmin = false;
+
+// ===============================
+// Вкладки
+// ===============================
+document.getElementById("tabPosts").onclick = () => {
+    switchTab("posts");
+};
+document.getElementById("tabFiles").onclick = () => {
+    switchTab("files");
+};
+
+function switchTab(tab) {
+    document.getElementById("tabPosts").classList.toggle("active", tab === "posts");
+    document.getElementById("tabFiles").classList.toggle("active", tab === "files");
+
+    document.getElementById("postsSection").classList.toggle("hidden", tab !== "posts");
+    document.getElementById("filesSection").classList.toggle("hidden", tab !== "files");
+}
+
+// ===============================
+// Админ режим
+// ===============================
+document.addEventListener("keydown", e => {
+    if (e.ctrlKey && e.shiftKey && e.key === "X") {
+        const pass = prompt("Введите пароль администратора");
+        if (pass === "admin123") {
+            isAdmin = true;
+            document.getElementById("adminUpload").classList.remove("hidden");
+            document.getElementById("adminPostUpload").classList.remove("hidden");
+            alert("Админ режим включён");
+        }
+    }
+});
+
+// ===============================
+// Загрузка публикации
+// ===============================
+async function uploadPost() {
+    const text = document.getElementById("postText").value.trim();
+    const file = document.getElementById("postFile").files[0];
+
+    let file_url = null;
+    let file_type = null;
+
+    if (file) {
+        const path = `posts/${Date.now()}_${file.name}`;
+        await supabase.storage.from("files").upload(path, file);
+        file_url = supabase.storage.from("files").getPublicUrl(path).data.publicUrl;
+        file_type = file.type;
+    }
+
+    await supabase.from("posts").insert([{ text, file_url, file_type }]);
+
+    document.getElementById("postText").value = "";
+    document.getElementById("postFile").value = "";
+
+    loadPosts();
+}
 
 // ===============================
 // Загрузка постов
 // ===============================
 async function loadPosts() {
-    const { data, error } = await supabase
-        .from("posts")
-        .select("*")
-        .order("id", { ascending: false });
+    const { data } = await supabase.from("posts").select("*").order("id", { ascending: false });
 
-    if (error) {
-        console.error("Ошибка загрузки постов:", error);
-        return;
-    }
-
-    const container = document.getElementById("posts");
-    container.innerHTML = "";
+    const list = document.getElementById("postsList");
+    list.innerHTML = "";
 
     data.forEach(post => {
         const div = document.createElement("div");
         div.className = "post";
+
+        let media = "";
+        if (post.file_url) {
+            if (post.file_type.startsWith("image")) {
+                media = `<img src="${post.file_url}">`;
+            } else if (post.file_type.startsWith("video")) {
+                media = `<video controls src="${post.file_url}"></video>`;
+            } else {
+                media = `<a href="${post.file_url}" target="_blank">📄 Скачать файл</a>`;
+            }
+        }
+
         div.innerHTML = `
             <p>${post.text}</p>
-            ${post.file_url ? `<img src="${post.file_url}" class="post-img">` : ""}
-            <div class="comments" id="comments-${post.id}"></div>
-            <textarea id="comment-input-${post.id}" placeholder="Написать комментарий..."></textarea>
+            ${media}
+            <div id="comments-${post.id}"></div>
+
+            <input id="nick-${post.id}" placeholder="Ваш ник">
+            <textarea id="comment-${post.id}" placeholder="Комментарий"></textarea>
             <button onclick="addComment(${post.id})">Отправить</button>
         `;
-        container.appendChild(div);
 
+        list.appendChild(div);
         loadComments(post.id);
     });
 }
 
 // ===============================
-// Загрузка комментариев
+// Комментарии
 // ===============================
+async function addComment(postId) {
+    const nick = document.getElementById(`nick-${postId}`).value.trim();
+    const text = document.getElementById(`comment-${postId}`).value.trim();
+
+    if (!nick || !text) return;
+
+    await supabase.from("comments").insert([{ post_id: postId, text: `${nick}: ${text}` }]);
+
+    loadComments(postId);
+}
+
 async function loadComments(postId) {
-    const { data, error } = await supabase
+    const { data } = await supabase
         .from("comments")
         .select("*")
         .eq("post_id", postId)
-        .order("id", { ascending: true });
-
-    if (error) {
-        console.error("Ошибка загрузки комментариев:", error);
-        return;
-    }
+        .order("id");
 
     const block = document.getElementById(`comments-${postId}`);
     block.innerHTML = "";
@@ -60,71 +132,57 @@ async function loadComments(postId) {
     data.forEach(c => {
         const div = document.createElement("div");
         div.className = "comment";
+
         div.innerHTML = `
             <p>${c.text}</p>
             <small>${new Date(c.created_at).toLocaleString()}</small>
-            ${window.isAdmin ? `<button onclick="deleteComment(${c.id}, ${postId})">Удалить</button>` : ""}
+            ${isAdmin ? `<button class="delete-btn" onclick="deleteComment(${c.id}, ${postId})">Удалить</button>` : ""}
         `;
+
         block.appendChild(div);
     });
 }
 
-// ===============================
-// Добавление комментария
-// ===============================
-async function addComment(postId) {
-    const input = document.getElementById(`comment-input-${postId}`);
-    const text = input.value.trim();
-
-    if (!text) return;
-
-    const { error } = await supabase
-        .from("comments")
-        .insert([{ post_id: postId, text }]);
-
-    if (error) {
-        console.error("Ошибка добавления комментария:", error);
-        return;
-    }
-
-    input.value = "";
-    loadComments(postId);
-}
-
-// ===============================
-// Удаление комментария (админ)
-// ===============================
 async function deleteComment(id, postId) {
-    const { error } = await supabase
-        .from("comments")
-        .delete()
-        .eq("id", id);
-
-    if (error) {
-        console.error("Ошибка удаления:", error);
-        return;
-    }
-
+    await supabase.from("comments").delete().eq("id", id);
     loadComments(postId);
 }
 
 // ===============================
-// Админ режим
+// Файлы
 // ===============================
-window.isAdmin = false;
+async function uploadFile() {
+    const file = document.getElementById("fileInput").files[0];
+    if (!file) return;
 
-document.addEventListener("keydown", e => {
-    if (e.ctrlKey && e.shiftKey && e.key === "X") {
-        const pass = prompt("Введите пароль администратора");
-        if (pass === "admin123") {
-            window.isAdmin = true;
-            alert("Админ режим включён");
-            loadPosts();
-        }
-    }
-});
+    const path = `files/${Date.now()}_${file.name}`;
+    await supabase.storage.from("files").upload(path, file);
+
+    loadFiles();
+}
+
+async function loadFiles() {
+    const { data } = await supabase.storage.from("files").list("files");
+
+    const list = document.getElementById("fileList");
+    list.innerHTML = "";
+
+    data.forEach(f => {
+        const url = supabase.storage.from("files").getPublicUrl(`files/${f.name}`).data.publicUrl;
+
+        const div = document.createElement("div");
+        div.className = "file-item";
+        div.innerHTML = `
+            <p>${f.name}</p>
+            <a href="${url}" target="_blank">Открыть</a>
+        `;
+
+        list.appendChild(div);
+    });
+}
 
 // ===============================
 // Старт
 // ===============================
 loadPosts();
+loadFiles();
