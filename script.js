@@ -3,7 +3,7 @@
 // ===============================
 const client = supabase.createClient(
     "https://atgmcttfsqpdhfdbfqkj.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0Z21jdHRmc3FwZGhmZGJmcWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNjg1NzMsImV4cCI6MjA4Njk0NDU3M30.VwGHqIXtsJZwA7hcpH2X1XrBDmT7TCt5xUgubhKB4Ns"
+    "ВСТАВЬ_СВОЙ_АНОН_КЛЮЧ_СЮДА"
 );
 
 let isAdmin = false;
@@ -68,9 +68,9 @@ async function deleteFile(path) {
     loadFiles();
 }
 
-function toggleDescription(name) {
-    const box = document.getElementById(`desc_${name}`);
-    box.classList.toggle("hidden");
+function toggleDescription(id) {
+    const box = document.getElementById(`desc_${id}`);
+    if (box) box.classList.toggle("hidden");
 }
 
 async function loadFiles() {
@@ -86,16 +86,19 @@ async function loadFiles() {
 
         const info = meta.find(m => m.path === filePath);
 
+        // Делаем безопасный ID
+        const safeId = file.name.replace(/[^a-zA-Z0-9_-]/g, "_");
+
         const div = document.createElement("div");
         div.className = "file-item";
 
         div.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <p>${file.name}</p>
-                <div class="comment-toggle" onclick="toggleDescription('${file.name}')">▼</div>
+                <div class="comment-toggle" onclick="toggleDescription('${safeId}')">▼</div>
             </div>
 
-            <div id="desc_${file.name}" class="hidden" style="margin-top:10px; opacity:0.8;">
+            <div id="desc_${safeId}" class="hidden" style="margin-top:10px; opacity:0.8;">
                 ${info?.description || "Нет описания"}
             </div>
 
