@@ -143,7 +143,16 @@ async function loadComments(postId) {
 }
 
 async function deleteComment(id, postId) {
-    await client.from("comments").delete().eq("id", id);
+    const { error } = await client
+        .from("comments")
+        .delete()
+        .eq("id", id);
+
+    if (error) {
+        alert("Ошибка удаления: " + error.message);
+        return;
+    }
+
     loadComments(postId);
 }
 
