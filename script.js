@@ -39,6 +39,18 @@ document.addEventListener("keydown", async (e) => {
 });
 
 // ===============================
+// ФОРМАТ ДАТЫ (1 января)
+// ===============================
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const months = [
+        "января", "февраля", "марта", "апреля", "мая", "июня",
+        "июля", "августа", "сентября", "октября", "ноября", "декабря"
+    ];
+    return `${date.getDate()} ${months[date.getMonth()]}`;
+}
+
+// ===============================
 // ЗАГРУЗКА ПУБЛИКАЦИЙ
 // ===============================
 async function loadPosts() {
@@ -108,7 +120,7 @@ function toggleCommentForm(postId) {
 }
 
 // ===============================
-// СПИСОК КОММЕНТАРИЕВ
+// СПИСОК КОММЕНТАРИЕВ (красивый интерфейс)
 // ===============================
 async function toggleComments(postId) {
     const block = document.getElementById(`comments_${postId}`);
@@ -133,11 +145,17 @@ async function toggleComments(postId) {
     data.forEach(c => {
         const div = document.createElement("div");
         div.className = "comment";
+
         div.innerHTML = `
-            <b>${c.name}</b><br>
-            ${c.text}<br>
-            <small>${new Date(c.created_at).toLocaleString()}</small>
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                <b>${c.name}</b>
+                <span style="color:#888; font-size:12px;">${formatDate(c.created_at)}</span>
+            </div>
+            <div style="white-space:pre-wrap; margin-bottom:10px;">
+                ${c.text}
+            </div>
         `;
+
         block.appendChild(div);
     });
 }
@@ -165,7 +183,7 @@ async function addComment(postId) {
 }
 
 // ===============================
-// ЗАГРУЗКА ПОСТА (ТЕКСТ + ВИДЕО/ФОТО)
+// ЗАГРУЗКА ПОСТА
 // ===============================
 async function uploadPost() {
     const text = document.getElementById("postText").value.trim();
@@ -199,7 +217,7 @@ async function deletePost(id) {
 }
 
 // ===============================
-// ЗАГРУЗКА ФАЙЛОВ (ПЛИТКИ + СКАЧИВАНИЕ)
+// ЗАГРУЗКА ФАЙЛОВ (плитки + скачивание)
 // ===============================
 async function loadFiles() {
     const fileList = document.getElementById("fileList");
