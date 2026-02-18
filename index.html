@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>mr-cloud</title>
+<title>mrcloud</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -32,10 +32,21 @@
         font-size: 15px;
         transition: 0.2s;
         user-select: none;
+        background: #1c1c1c;
+        border: 1px solid #333;
+        color: #bfbfbf;
+    }
+
+    .tab:hover {
+        background: #2a2a2a;
+        border-color: #444;
+        color: white;
     }
 
     .tab.active {
         background: #2962FF;
+        border-color: #2962FF;
+        color: white;
     }
 
     .content {
@@ -149,6 +160,26 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+// Переключение вкладок
+document.getElementById("tabPosts").onclick = () => {
+    document.getElementById("postsSection").classList.remove("hidden");
+    document.getElementById("filesSection").classList.add("hidden");
+
+    document.getElementById("tabPosts").classList.add("active");
+    document.getElementById("tabFiles").classList.remove("active");
+};
+
+document.getElementById("tabFiles").onclick = () => {
+    document.getElementById("postsSection").classList.add("hidden");
+    document.getElementById("filesSection").classList.remove("hidden");
+
+    document.getElementById("tabFiles").classList.add("active");
+    document.getElementById("tabPosts").classList.remove("active");
+};
+</script>
+
 <script src="script.js"></script>
 
 </body>
