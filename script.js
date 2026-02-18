@@ -1,6 +1,3 @@
-// ===============================
-// Supabase
-// ===============================
 const client = supabase.createClient(
     "https://atgmcttfsqpdhfdbfqkj.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0Z21jdHRmc3FwZGhmZGJmcWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNjg1NzMsImV4cCI6MjA4Njk0NDU3M30.VwGHqIXtsJZwA7hcpH2X1XrBDmT7TCt5xUgubhKB4Ns"
@@ -8,9 +5,6 @@ const client = supabase.createClient(
 
 let isAdmin = false;
 
-// ===============================
-// Вкладки
-// ===============================
 document.getElementById("tabPosts").onclick = () => switchTab("posts");
 document.getElementById("tabFiles").onclick = () => switchTab("files");
 
@@ -22,9 +16,6 @@ function switchTab(tab) {
     document.getElementById("filesSection").classList.toggle("hidden", tab !== "files");
 }
 
-// ===============================
-// Админ режим
-// ===============================
 document.addEventListener("keydown", e => {
     if (e.ctrlKey && e.shiftKey && e.key === "X") {
         const pass = prompt("Введите пароль администратора");
@@ -37,9 +28,6 @@ document.addEventListener("keydown", e => {
     }
 });
 
-// ===============================
-// Загрузка публикации
-// ===============================
 async function uploadPost() {
     const text = document.getElementById("postText").value.trim();
     const file = document.getElementById("postFile").files[0];
@@ -65,9 +53,6 @@ async function uploadPost() {
     loadPosts();
 }
 
-// ===============================
-// Загрузка постов
-// ===============================
 async function loadPosts() {
     const { data } = await client
         .from("posts")
@@ -96,7 +81,9 @@ async function loadPosts() {
             <p>${post.text || ""}</p>
             ${media}
 
-            <button class="comment-toggle" onclick="toggleCommentBox(${post.id})">💬</button>
+            <button class="comment-toggle" onclick="toggleCommentBox(${post.id})">
+                <img src="https://cdn-icons-png.flaticon.com/512/1380/1380338.png">
+            </button>
 
             <div id="comment-box-${post.id}" class="comment-box hidden">
                 <input id="nick-${post.id}" placeholder="Ваш ник">
@@ -112,17 +99,11 @@ async function loadPosts() {
     });
 }
 
-// ===============================
-// Открытие/закрытие меню комментариев
-// ===============================
 function toggleCommentBox(postId) {
     const box = document.getElementById(`comment-box-${postId}`);
     box.classList.toggle("hidden");
 }
 
-// ===============================
-// Добавление комментария
-// ===============================
 async function addComment(postId) {
     const nick = document.getElementById(`nick-${postId}`).value.trim();
     const text = document.getElementById(`comment-${postId}`).value.trim();
@@ -137,9 +118,6 @@ async function addComment(postId) {
     loadComments(postId);
 }
 
-// ===============================
-// Загрузка комментариев
-// ===============================
 async function loadComments(postId) {
     const { data } = await client
         .from("comments")
@@ -169,9 +147,6 @@ async function deleteComment(id, postId) {
     loadComments(postId);
 }
 
-// ===============================
-// Файлы
-// ===============================
 async function uploadFile() {
     const file = document.getElementById("fileInput").files[0];
     if (!file) return;
@@ -206,8 +181,5 @@ async function loadFiles() {
     });
 }
 
-// ===============================
-// Старт
-// ===============================
 loadPosts();
 loadFiles();
