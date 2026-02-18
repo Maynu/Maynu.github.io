@@ -1,130 +1,20 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>mr-cloud</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<!-- Material Icons -->
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
-<style>
-    body {
-        margin: 0;
-        background: #121212;
-        font-family: "Roboto", sans-serif;
-        color: white;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .tabs {
-        margin-top: 40px;
-        display: flex;
-        gap: 10px;
-        background: #1E1E1E;
-        padding: 6px;
-        border-radius: 12px;
-    }
-
-    .tab {
-        padding: 10px 22px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 15px;
-        transition: 0.2s;
-        user-select: none;
-    }
-
-    .tab.active {
-        background: #2962FF;
-    }
-
-    .content {
-        margin-top: 30px;
-        width: 90%;
-        max-width: 700px;
-    }
-
-    .post, .file-item {
-        background: #1A1A1A;
-        padding: 16px;
-        border-radius: 10px;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .file-icon {
-        font-size: 32px;
-        color: #90CAF9;
-    }
-
-    .upload-btn {
-        margin-top: 15px;
-        background: #2962FF;
-        padding: 10px 18px;
-        border-radius: 8px;
-        cursor: pointer;
-        display: inline-block;
-    }
-
-    .hidden {
-        display: none;
-    }
-
-    .file-item .material-icons {
-        font-size: 22px;
-    }
-
-    .create-post-btn {
-        background: #2962FF;
-        padding: 10px 18px;
-        border-radius: 8px;
-        cursor: pointer;
-        display: inline-block;
-        margin-bottom: 15px;
-    }
-</style>
+  <meta charset="UTF-8" />
+  <title>chay-cloud</title>
 </head>
 <body>
+  <h1>mr-chay</h1>
 
-<div class="tabs">
-    <div class="tab active" id="tabPosts">Публикации</div>
-    <div class="tab" id="tabFiles">Файлы</div>
-</div>
+  <input type="file" id="fileInput">
+  <button id="uploadBtn">Загрузить</button>
 
-<div class="content">
+  <h2>Файлы:</h2>
+  <ul id="filesList"></ul>
 
-    <div id="postsSection">
-        <div id="adminPost" class="hidden">
-            <div class="create-post-btn" id="createPostBtn">Создать публикацию</div>
-        </div>
-        <div id="postList"></div>
-    </div>
-
-    <div id="filesSection" class="hidden">
-        <div id="fileList"></div>
-
-        <div id="adminUpload" class="hidden">
-            <label class="upload-btn">
-                Загрузить файл
-                <input type="file" id="fileInput" class="hidden">
-            </label>
-        </div>
-    </div>
-
-</div>
-
-<!-- Firebase COMPAT -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
-
-<!-- Внешний JS -->
-<script src="script.js"></script>
-
+  <!-- Supabase JS v2 -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
 </body>
 </html>
