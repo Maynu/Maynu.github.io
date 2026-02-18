@@ -80,15 +80,13 @@
     }
 
     .comment-toggle {
-        margin-top: 10px;
         background: #1c1c1c;
         border: 1px solid #333;
-        padding: 5px 10px;
-        border-radius: 5px;
+        padding: 6px 12px;
+        border-radius: 6px;
         cursor: pointer;
         color: #bfbfbf;
-        font-size: 12px;
-        width: fit-content;
+        font-size: 13px;
         transition: 0.2s;
     }
 
@@ -135,6 +133,7 @@
 
 <div class="content">
 
+    <!-- ПУБЛИКАЦИИ -->
     <div id="postsSection">
         <div id="adminPostUpload" class="hidden">
             <textarea id="postText" placeholder="Текст публикации"></textarea>
@@ -145,6 +144,7 @@
         <div id="postsList"></div>
     </div>
 
+    <!-- ФАЙЛЫ -->
     <div id="filesSection" class="hidden">
         <div id="adminUpload" class="hidden">
             <input type="file" id="fileInput">
