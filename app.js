@@ -5,26 +5,22 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const client = createClient(supabaseUrl, supabaseKey);
 
-// Загрузка файла
 async function uploadFile(file) {
   const filePath = file.name;
 
-  const { data, error } = await client
+  const { error } = await client
     .storage
     .from("files")
     .upload(filePath, file, { upsert: true });
 
   if (error) {
-    console.error("Ошибка загрузки:", error);
     alert("Ошибка загрузки: " + error.message);
     return;
   }
 
-  alert("Файл загружен!");
   listFiles();
 }
 
-// Скачивание файла
 async function downloadFile(name) {
   const { data, error } = await client
     .storage
@@ -32,7 +28,6 @@ async function downloadFile(name) {
     .download(name);
 
   if (error) {
-    console.error("Ошибка скачивания:", error);
     alert("Ошибка скачивания: " + error.message);
     return;
   }
@@ -44,7 +39,6 @@ async function downloadFile(name) {
   a.click();
 }
 
-// Удаление файла
 async function deleteFile(name) {
   const { error } = await client
     .storage
@@ -52,16 +46,13 @@ async function deleteFile(name) {
     .remove([name]);
 
   if (error) {
-    console.error("Ошибка удаления:", error);
     alert("Ошибка удаления: " + error.message);
     return;
   }
 
-  alert("Файл удалён!");
   listFiles();
 }
 
-// Список файлов
 async function listFiles() {
   const { data, error } = await client
     .storage
@@ -69,7 +60,7 @@ async function listFiles() {
     .list("", { limit: 100 });
 
   if (error) {
-    console.error("Ошибка списка:", error);
+    console.error(error);
     return;
   }
 
@@ -79,9 +70,11 @@ async function listFiles() {
   data.forEach(file => {
     const li = document.createElement("li");
     li.innerHTML = `
-      ${file.name}
-      <button onclick="downloadFile('${file.name}')">Скачать</button>
-      <button onclick="deleteFile('${file.name}')">Удалить</button>
+      <span>${file.name}</span>
+      <div class="file-actions">
+        <button onclick="downloadFile('${file.name}')">⬇</button>
+        <button onclick="deleteFile('${file.name}')">🗑</button>
+      </div>
     `;
     ul.appendChild(li);
   });
