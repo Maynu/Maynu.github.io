@@ -1,112 +1,25 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>chay-post</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>Посты</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script defer src="script.js"></script>
 
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
-<style>
-    body {
-        margin: 0;
-        background: #121212;
-        font-family: "Roboto", sans-serif;
-        color: white;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .tabs {
-        margin-top: 40px;
-        display: flex;
-        gap: 10px;
-        background: #1E1E1E;
-        padding: 6px;
-        border-radius: 12px;
-    }
-
-    .tab {
-        padding: 10px 22px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 15px;
-        transition: 0.2s;
-        user-select: none;
-    }
-
-    .tab.active {
-        background: #2962FF;
-    }
-
-    .content {
-        margin-top: 30px;
-        width: 90%;
-        max-width: 700px;
-    }
-
-    .post, .file-item {
-        background: #1A1A1A;
-        padding: 16px;
-        border-radius: 10px;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .file-icon {
-        font-size: 32px;
-        color: #90CAF9;
-    }
-
-    .upload-btn {
-        margin-top: 15px;
-        background: #2962FF;
-        padding: 10px 18px;
-        border-radius: 8px;
-        cursor: pointer;
-        display: inline-block;
-    }
-
-    .hidden {
-        display: none;
-    }
-
-    .file-item .material-icons {
-        font-size: 22px;
-    }
-</style>
+    <style>
+        body { font-family: Arial; background: #f2f2f2; padding: 20px; }
+        .post { background: white; padding: 15px; margin-bottom: 20px; border-radius: 10px; }
+        .post-img { max-width: 100%; border-radius: 10px; margin-top: 10px; }
+        textarea { width: 100%; height: 60px; margin-top: 10px; }
+        button { margin-top: 5px; padding: 8px 12px; }
+        .comment { background: #eee; padding: 10px; margin-top: 10px; border-radius: 8px; }
+        .comment button { background: red; color: white; border: none; padding: 5px 10px; }
+    </style>
 </head>
 <body>
 
-<div class="tabs">
-    <div class="tab active" id="tabPosts">Публикации</div>
-    <div class="tab" id="tabFiles">Файлы</div>
-</div>
-
-<div class="content">
-
-    <div id="postsSection">
-        <div class="post">Здесь будут публикации…</div>
-    </div>
-
-    <div id="filesSection" class="hidden">
-        <div id="fileList"></div>
-
-        <div id="adminUpload" class="hidden">
-            <label class="upload-btn">
-                Загрузить файл
-                <input type="file" id="fileInput" class="hidden">
-            </label>
-        </div>
-    </div>
-
-</div>
-
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="app.js"></script>
+<h1>Посты</h1>
+<div id="posts"></div>
 
 </body>
 </html>
