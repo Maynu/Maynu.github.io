@@ -39,7 +39,7 @@ document.addEventListener("keydown", async (e) => {
 });
 
 // ===============================
-// ФОРМАТ ДАТЫ (1 января)
+// ФОРМАТ ДАТЫ (как YouTube — "1 января")
 // ===============================
 function formatDate(dateString) {
     const date = new Date(dateString);
@@ -120,7 +120,7 @@ function toggleCommentForm(postId) {
 }
 
 // ===============================
-// СПИСОК КОММЕНТАРИЕВ (красивый интерфейс)
+// СПИСОК КОММЕНТАРИЕВ (как YouTube)
 // ===============================
 async function toggleComments(postId) {
     const block = document.getElementById(`comments_${postId}`);
@@ -147,11 +147,12 @@ async function toggleComments(postId) {
         div.className = "comment";
 
         div.innerHTML = `
-            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                <b>${c.name}</b>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <b style="font-size:14px;">${c.name}</b>
                 <span style="color:#888; font-size:12px;">${formatDate(c.created_at)}</span>
             </div>
-            <div style="white-space:pre-wrap; margin-bottom:10px;">
+
+            <div style="white-space:pre-wrap; font-size:14px; margin-bottom:14px;">
                 ${c.text}
             </div>
         `;
