@@ -10,14 +10,12 @@ let isAdmin = false;
 // Вход в админку
 // ===============================
 async function checkAdminPassword(pass) {
-    const { data, error } = await client
+    const { data } = await client
         .from("admin_settings")
         .select("admin_password")
         .single();
 
-    if (error || !data) return false;
-
-    return pass === data.admin_password;
+    return data && pass === data.admin_password;
 }
 
 document.addEventListener("keydown", async e => {
@@ -36,7 +34,7 @@ document.addEventListener("keydown", async e => {
 });
 
 // ===============================
-// Загрузка ФАЙЛОВ
+// ФАЙЛЫ
 // ===============================
 async function uploadFile() {
     if (!isAdmin) return alert("Нет доступа");
@@ -46,11 +44,7 @@ async function uploadFile() {
 
     const path = `files/${Date.now()}_${file.name}`;
 
-    const { error } = await client.storage
-        .from("files")
-        .upload(path, file);
-
-    if (error) return alert("Ошибка загрузки");
+    await client.storage.from("files").upload(path, file);
 
     loadFiles();
 }
@@ -58,11 +52,7 @@ async function uploadFile() {
 async function deleteFile(path) {
     if (!isAdmin) return alert("Нет доступа");
 
-    const { error } = await client.storage
-        .from("files")
-        .remove([path]);
-
-    if (error) return alert("Ошибка удаления");
+    await client.storage.from("files").remove([path]);
 
     loadFiles();
 }
@@ -71,11 +61,7 @@ async function loadFiles() {
     const container = document.getElementById("fileList");
     container.innerHTML = "";
 
-    const { data, error } = await client.storage
-        .from("files")
-        .list("files", { limit: 100 });
-
-    if (error) return;
+    const { data } = await client.storage.from("files").list("files");
 
     data.forEach(file => {
         const filePath = `files/${file.name}`;
@@ -107,20 +93,11 @@ async function uploadPost() {
 
     if (file) {
         const path = `posts/${Date.now()}_${file.name}`;
-        const { error } = await client.storage.from("posts").upload(path, file);
-        if (error) return alert("Ошибка загрузки файла");
-
+        await client.storage.from("posts").upload(path, file);
         fileUrl = client.storage.from("posts").getPublicUrl(path).data.publicUrl;
     }
 
-    const { error } = await client
-        .from("posts")
-        .insert([{ text, file_url: fileUrl }]);
-
-    if (error) return alert("Ошибка публикации");
-
-    document.getElementById("postText").value = "";
-    document.getElementById("postFile").value = "";
+    await client.from("posts").insert([{ text, file_url: fileUrl }]);
 
     loadPosts();
 }
@@ -128,26 +105,67 @@ async function uploadPost() {
 async function deletePost(id) {
     if (!isAdmin) return alert("Нет доступа");
 
-    const { error } = await client
-        .from("posts")
-        .delete()
-        .eq("id", id);
-
-    if (error) return alert("Ошибка удаления");
+    await client.from("posts").delete().eq("id", id);
 
     loadPosts();
 }
 
+// ===============================
+// КОММЕНТАРИИ
+// ===============================
+async function loadComments(postId, box) {
+    const { data } = await client
+        .from("comments")
+        .select("*")
+        .eq("post_id", postId)
+        .order("id", { ascending: true });
+
+    box.innerHTML = "";
+
+    data.forEach(c => {
+        const div = document.createElement("div");
+        div.className = "comment";
+        div.innerHTML = `
+            <p>${c.text}</p>
+            <small>${c.created_at}</small>
+        `;
+        box.appendChild(div);
+    });
+}
+
+async function addComment(postId, input, box) {
+    const text = input.value.trim();
+    if (!text) return;
+
+    await client.from("comments").insert([{ post_id: postId, text }]);
+
+    input.value = "";
+    loadComments(postId, box);
+}
+
+function toggleComments(postId) {
+    const box = document.getElementById(`comments_${postId}`);
+    const input = document.getElementById(`commentInput_${postId}`);
+
+    if (box.classList.contains("hidden")) {
+        box.classList.remove("hidden");
+        loadComments(postId, box);
+    } else {
+        box.classList.add("hidden");
+    }
+}
+
+// ===============================
+// ЗАГРУЗКА ПОСТОВ
+// ===============================
 async function loadPosts() {
     const container = document.getElementById("postsList");
     container.innerHTML = "";
 
-    const { data, error } = await client
+    const { data } = await client
         .from("posts")
         .select("*")
         .order("id", { ascending: false });
-
-    if (error) return;
 
     data.forEach(post => {
         const div = document.createElement("div");
@@ -165,6 +183,13 @@ async function loadPosts() {
         div.innerHTML = `
             <p>${post.text}</p>
             ${media}
+            <div class="comment-toggle" onclick="toggleComments(${post.id})">Комментарии</div>
+
+            <div id="comments_${post.id}" class="comment-box hidden"></div>
+
+            <input id="commentInput_${post.id}" placeholder="Ваш комментарий...">
+            <button onclick="addComment(${post.id}, commentInput_${post.id}, comments_${post.id})">Отправить</button>
+
             ${isAdmin ? `<button class="delete-btn" onclick="deletePost(${post.id})">Удалить</button>` : ""}
         `;
 
@@ -178,15 +203,11 @@ async function loadPosts() {
 document.getElementById("tabPosts").onclick = () => {
     document.getElementById("postsSection").classList.remove("hidden");
     document.getElementById("filesSection").classList.add("hidden");
-    document.getElementById("tabPosts").classList.add("active");
-    document.getElementById("tabFiles").classList.remove("active");
 };
 
 document.getElementById("tabFiles").onclick = () => {
     document.getElementById("postsSection").classList.add("hidden");
     document.getElementById("filesSection").classList.remove("hidden");
-    document.getElementById("tabFiles").classList.add("active");
-    document.getElementById("tabPosts").classList.remove("active");
 };
 
 // ===============================
