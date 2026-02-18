@@ -111,7 +111,7 @@ async function deletePost(id) {
 }
 
 // ===============================
-// КОММЕНТАРИИ (НОВАЯ СИСТЕМА)
+// КОММЕНТАРИИ (НОВАЯ ЛОГИКА)
 // ===============================
 async function loadComments(postId, box) {
     const { data } = await client
@@ -134,7 +134,10 @@ async function loadComments(postId, box) {
     });
 }
 
-async function addComment(postId, nameInput, textInput, box) {
+async function addComment(postId) {
+    const nameInput = document.getElementById(`commentName_${postId}`);
+    const textInput = document.getElementById(`commentText_${postId}`);
+
     const name = nameInput.value.trim();
     const text = textInput.value.trim();
 
@@ -145,21 +148,28 @@ async function addComment(postId, nameInput, textInput, box) {
     nameInput.value = "";
     textInput.value = "";
 
-    loadComments(postId, box);
+    loadComments(postId, document.getElementById(`comments_${postId}`));
 }
 
 function toggleComments(postId) {
     const box = document.getElementById(`comments_${postId}`);
+    const addBtn = document.getElementById(`addCommentBtn_${postId}`);
     const form = document.getElementById(`commentForm_${postId}`);
 
     if (box.classList.contains("hidden")) {
         box.classList.remove("hidden");
-        form.classList.remove("hidden");
+        addBtn.classList.remove("hidden");
         loadComments(postId, box);
     } else {
         box.classList.add("hidden");
+        addBtn.classList.add("hidden");
         form.classList.add("hidden");
     }
+}
+
+function showCommentForm(postId) {
+    const form = document.getElementById(`commentForm_${postId}`);
+    form.classList.remove("hidden");
 }
 
 // ===============================
@@ -191,16 +201,17 @@ async function loadPosts() {
             <p>${post.text}</p>
             ${media}
 
-            <div class="comment-toggle" onclick="toggleComments(${post.id})">Комментарии</div>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <div class="comment-toggle" onclick="toggleComments(${post.id})">Комментарии</div>
+                <div id="addCommentBtn_${post.id}" class="comment-toggle hidden" onclick="showCommentForm(${post.id})">Оставить комментарий</div>
+            </div>
 
             <div id="comments_${post.id}" class="comment-box hidden"></div>
 
-            <div id="commentForm_${post.id}" class="hidden">
+            <div id="commentForm_${post.id}" class="hidden" style="margin-top:10px;">
                 <input id="commentName_${post.id}" placeholder="Ваше имя">
                 <input id="commentText_${post.id}" placeholder="Ваш комментарий">
-                <button onclick="addComment(${post.id}, commentName_${post.id}, commentText_${post.id}, comments_${post.id})">
-                    Оставить комментарий
-                </button>
+                <button onclick="addComment(${post.id})">Отправить</button>
             </div>
 
             ${isAdmin ? `<button class="delete-btn" onclick="deletePost(${post.id})">Удалить</button>` : ""}
