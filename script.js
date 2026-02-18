@@ -3,7 +3,7 @@
 // ===============================
 const client = supabase.createClient(
     "https://atgmcttfsqpdhfdbfqkj.supabase.co",
-    "ВСТАВЬ_СВОЙ_АНОН_КЛЮЧ_СЮДА"
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0Z21jdHRmc3FwZGhmZGJmcWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNjg1NzMsImV4cCI6MjA4Njk0NDU3M30.VwGHqIXtsJZwA7hcpH2X1XrBDmT7TCt5xUgubhKB4Ns"
 );
 
 let isAdmin = false;
@@ -48,10 +48,8 @@ async function uploadFile() {
 
     const path = `files/${Date.now()}_${file.name}`;
 
-    // Загружаем файл
     await client.storage.from("files").upload(path, file);
 
-    // Сохраняем описание
     await client.from("files_meta").insert([
         { path, description }
     ]);
@@ -86,7 +84,6 @@ async function loadFiles() {
 
         const info = meta.find(m => m.path === filePath);
 
-        // Делаем безопасный ID
         const safeId = file.name.replace(/[^a-zA-Z0-9_-]/g, "_");
 
         const div = document.createElement("div");
@@ -105,7 +102,6 @@ async function loadFiles() {
             ${isAdmin ? `<button class="delete-btn" onclick="deleteFile('${filePath}')">Удалить</button>` : ""}
         `;
 
-        // Скачивание файла
         div.style.cursor = "pointer";
         div.onclick = (e) => {
             if (e.target.classList.contains("comment-toggle")) return;
