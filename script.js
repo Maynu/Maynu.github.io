@@ -3,7 +3,7 @@
 // ===============================
 const client = supabase.createClient(
     "https://atgmcttfsqpdhfdbfqkj.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0Z21jdHRmc3FwZGhmZGJmcWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNjg1NzMsImV4cCI6MjA4Njk0NDU3M30.VwGHqIXtsJZwA7hcpH2X1XrBDmT7TCt5xUgubhKB4Ns"
+    "ВСТАВЬ_СВОЙ_АНОН_КЛЮЧ_СЮДА"
 );
 
 let isAdmin = false;
@@ -36,6 +36,40 @@ document.addEventListener("keydown", async e => {
 });
 
 // ===============================
+// ПРЕДПРОСМОТР ФАЙЛОВ
+// ===============================
+function previewFile(input, previewBoxId) {
+    const file = input.files[0];
+    const box = document.getElementById(previewBoxId);
+
+    if (!file) {
+        box.classList.add("hidden");
+        box.innerHTML = "";
+        return;
+    }
+
+    const url = URL.createObjectURL(file);
+
+    if (file.type.startsWith("image/")) {
+        box.innerHTML = `<img src="${url}" style="max-width:100%; border-radius:10px;">`;
+    } else if (file.type.startsWith("video/")) {
+        box.innerHTML = `<video src="${url}" controls style="max-width:100%; border-radius:10px;"></video>`;
+    } else {
+        box.innerHTML = `<p>Файл: ${file.name}</p>`;
+    }
+
+    box.classList.remove("hidden");
+}
+
+document.getElementById("fileInput").addEventListener("change", () => {
+    previewFile(document.getElementById("fileInput"), "filePreview");
+});
+
+document.getElementById("postFile").addEventListener("change", () => {
+    previewFile(document.getElementById("postFile"), "postPreview");
+});
+
+// ===============================
 // ФАЙЛЫ
 // ===============================
 async function uploadFile() {
@@ -54,6 +88,10 @@ async function uploadFile() {
 
     await client.from("files_meta").insert([{ path, description }]);
 
+    document.getElementById("fileInput").value = "";
+    document.getElementById("fileDescription").value = "";
+    document.getElementById("filePreview").classList.add("hidden");
+
     loadFiles();
 }
 
@@ -66,24 +104,55 @@ async function deleteFile(path) {
     loadFiles();
 }
 
+async function saveDescription(path) {
+    const input = document.getElementById(`edit_${path}`);
+    const newText = input.value;
+
+    await client.from("files_meta").update({ description: newText }).eq("path", path);
+
+    loadFiles();
+}
+
 function toggleDescription(id) {
     const box = document.getElementById(`desc_${id}`);
-    if (box) box.classList.toggle("hidden");
+    box.classList.toggle("hidden");
+
+    if (!box.classList.contains("hidden")) {
+        box.classList.add("fade");
+        setTimeout(() => box.classList.add("show"), 10);
+    } else {
+        box.classList.remove("show");
+    }
 }
 
 async function loadFiles() {
     const container = document.getElementById("fileList");
     container.innerHTML = "";
 
+    const sort = document.getElementById("sortFiles").value;
+
     const { data: files } = await client.storage.from("files").list("files");
     const { data: meta } = await client.from("files_meta").select("*");
 
-    files.forEach(file => {
-        const filePath = `files/${file.name}`;
-        const url = client.storage.from("files").getPublicUrl(filePath).data.publicUrl;
+    let list = files.map(f => {
+        const path = `files/${f.name}`;
+        const info = meta.find(m => m.path === path);
+        return {
+            name: f.name,
+            path,
+            description: info?.description || "",
+            created_at: f.created_at
+        };
+    });
 
-        const info = meta.find(m => m.path === filePath);
+    // Сортировка
+    if (sort === "date_desc") list.sort((a, b) => b.created_at.localeCompare(a.created_at));
+    if (sort === "date_asc") list.sort((a, b) => a.created_at.localeCompare(b.created_at));
+    if (sort === "name_asc") list.sort((a, b) => a.name.localeCompare(b.name));
+    if (sort === "name_desc") list.sort((a, b) => b.name.localeCompare(a.name));
 
+    list.forEach(file => {
+        const url = client.storage.from("files").getPublicUrl(file.path).data.publicUrl;
         const safeId = file.name.replace(/[^a-zA-Z0-9_-]/g, "_");
 
         const div = document.createElement("div");
@@ -95,16 +164,21 @@ async function loadFiles() {
                 <div class="comment-toggle" onclick="toggleDescription('${safeId}')">▼</div>
             </div>
 
-            <div id="desc_${safeId}" class="hidden" style="margin-top:10px; opacity:0.8;">
-                ${info?.description || "Нет описания"}
+            <div id="desc_${safeId}" class="hidden fade" style="margin-top:10px; opacity:0.8;">
+                <p>${file.description || "Нет описания"}</p>
+
+                ${isAdmin ? `
+                    <textarea id="edit_${file.path}" style="margin-top:10px;">${file.description}</textarea>
+                    <button class="comment-toggle" onclick="saveDescription('${file.path}')">Сохранить</button>
+                ` : ""}
             </div>
 
-            ${isAdmin ? `<button class="delete-btn" onclick="deleteFile('${filePath}')">Удалить</button>` : ""}
+            ${isAdmin ? `<button class="delete-btn" onclick="deleteFile('${file.path}')">Удалить</button>` : ""}
         `;
 
         div.style.cursor = "pointer";
         div.onclick = (e) => {
-            if (e.target.classList.contains("comment-toggle")) return;
+            if (e.target.classList.contains("comment-toggle") || e.target.tagName === "TEXTAREA") return;
 
             const a = document.createElement("a");
             a.href = url;
@@ -138,6 +212,10 @@ async function uploadPost() {
     }
 
     await client.from("posts").insert([{ text, file_url: fileUrl }]);
+
+    document.getElementById("postText").value = "";
+    document.getElementById("postFile").value = "";
+    document.getElementById("postPreview").classList.add("hidden");
 
     loadPosts();
 }
