@@ -93,6 +93,15 @@
     }
 
     .hidden { display: none; }
+
+    /* Fade-in анимация */
+    .fade {
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+    .fade.show {
+        opacity: 1;
+    }
 </style>
 </head>
 <body>
@@ -109,6 +118,7 @@
         <div id="adminPostUpload" class="hidden">
             <textarea id="postText" placeholder="Текст публикации"></textarea>
             <input type="file" id="postFile">
+            <div id="postPreview" class="hidden" style="margin-top:10px;"></div>
             <button class="comment-toggle" onclick="uploadPost()">Опубликовать</button>
         </div>
 
@@ -120,7 +130,17 @@
         <div id="adminUpload" class="hidden">
             <input type="file" id="fileInput">
             <input id="fileDescription" placeholder="Описание файла">
+            <div id="filePreview" class="hidden" style="margin-top:10px;"></div>
             <button class="comment-toggle" onclick="uploadFile()">Загрузить файл</button>
+        </div>
+
+        <div style="margin-bottom:15px;">
+            <select id="sortFiles" class="comment-toggle" onchange="loadFiles()">
+                <option value="date_desc">По дате (новые → старые)</option>
+                <option value="date_asc">По дате (старые → новые)</option>
+                <option value="name_asc">По имени (A → Z)</option>
+                <option value="name_desc">По имени (Z → A)</option>
+            </select>
         </div>
 
         <div id="fileList"></div>
@@ -129,6 +149,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
 
 <script>
 // Переключение вкладок
@@ -146,8 +167,6 @@ document.getElementById("tabFiles").onclick = () => {
     document.getElementById("tabPosts").classList.remove("active");
 };
 </script>
-
-<script src="script.js"></script>
 
 </body>
 </html>
