@@ -1,8 +1,7 @@
-// Инициализация Supabase
 const { createClient } = supabase;
 
 const supabaseUrl = "https://atgmcttfsqpdhfdbfqkj.supabase.co";
-const supabaseKey = "sb_publishable_9G7S9moMZ4316kVcOG2P9Q_QH8YNTlm";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0Z21jdHRmc3FwZGhmZGJmcWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNjg1NzMsImV4cCI6MjA4Njk0NDU3M30.VwGHqIXtsJZwA7hcpH2X1XrBDmT7TCt5xUgubhKB4Ns";
 
 const client = createClient(supabaseUrl, supabaseKey);
 
@@ -88,12 +87,10 @@ async function listFiles() {
   });
 }
 
-// Кнопка загрузки
 document.getElementById("uploadBtn").addEventListener("click", () => {
   const input = document.getElementById("fileInput");
   if (!input.files.length) return alert("Выбери файл!");
   uploadFile(input.files[0]);
 });
 
-// Загружаем список при старте
 listFiles();
