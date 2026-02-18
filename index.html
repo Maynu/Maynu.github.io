@@ -16,7 +16,6 @@
         align-items: center;
     }
 
-    /* Tabs */
     .tabs {
         margin-top: 40px;
         display: flex;
@@ -39,14 +38,12 @@
         background: #2962FF;
     }
 
-    /* Content */
     .content {
         margin-top: 30px;
         width: 90%;
         max-width: 700px;
     }
 
-    /* Posts & Files */
     .post, .file-item {
         background: #1A1A1A;
         padding: 16px;
@@ -82,38 +79,26 @@
         display: none;
     }
 
-    /* Минималистичная кнопка комментариев */
+    /* Кнопка "Комментарии" */
     .comment-toggle {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
+        margin-top: 12px;
         background: #181818;
         border: 1px solid #2a2a2a;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        padding: 8px 14px;
+        border-radius: 6px;
         cursor: pointer;
-        margin-top: 12px;
+        color: #ccc;
+        font-size: 14px;
         transition: 0.2s;
+        width: fit-content;
     }
 
     .comment-toggle:hover {
         background: #222;
         border-color: #3a3a3a;
+        color: white;
     }
 
-    .comment-toggle img {
-        width: 22px;
-        height: 22px;
-        opacity: 0.75;
-        transition: 0.2s;
-    }
-
-    .comment-toggle:hover img {
-        opacity: 1;
-    }
-
-    /* Меню комментариев */
     .comment-box {
         background: #1A1A1A;
         padding: 12px;
@@ -151,7 +136,6 @@
 
 <div class="content">
 
-    <!-- ПУБЛИКАЦИИ -->
     <div id="postsSection">
         <div id="adminPostUpload" class="hidden">
             <textarea id="postText" placeholder="Текст публикации"></textarea>
@@ -162,7 +146,6 @@
         <div id="postsList"></div>
     </div>
 
-    <!-- ФАЙЛЫ -->
     <div id="filesSection" class="hidden">
         <div id="adminUpload" class="hidden">
             <input type="file" id="fileInput">
