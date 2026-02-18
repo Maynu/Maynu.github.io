@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>mr-cloud</title>
+<title>mrcloud</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <!-- Material Icons -->
@@ -90,20 +90,30 @@
         width: 40px;
         height: 40px;
         border-radius: 50%;
-        background: #1E1E1E;
-        border: 1px solid #333;
+        background: #181818;
+        border: 1px solid #2a2a2a;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        color: #ccc;
-        font-size: 20px;
-        margin-top: 10px;
+        margin-top: 12px;
         transition: 0.2s;
     }
 
     .comment-toggle:hover {
-        background: #333;
+        background: #222;
+        border-color: #3a3a3a;
+    }
+
+    .comment-toggle img {
+        width: 22px;
+        height: 22px;
+        opacity: 0.75;
+        transition: 0.2s;
+    }
+
+    .comment-toggle:hover img {
+        opacity: 1;
     }
 
     /* Меню комментариев */
