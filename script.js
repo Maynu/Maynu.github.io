@@ -3,7 +3,7 @@
 // ===============================
 const client = supabase.createClient(
     "https://atgmcttfsqpdhfdbfqkj.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0Z21jdHRmc3FwZGhmZGJmcWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNjg1NzMsImV4cCI6MjA4Njk0NDU3M30.VwGHqIXtsJZwA7hcpH2X1XrBDmT7TCt5xUgubhKB4Ns"
+    "ВСТАВЬ_СВОЙ_АНОН_КЛЮЧ_СЮДА"
 );
 
 let isAdmin = false;
@@ -48,11 +48,11 @@ async function uploadFile() {
 
     const path = `files/${Date.now()}_${file.name}`;
 
-    await client.storage.from("files").upload(path, file);
+    await client.storage.from("files").upload(path, file, {
+        contentType: file.type
+    });
 
-    await client.from("files_meta").insert([
-        { path, description }
-    ]);
+    await client.from("files_meta").insert([{ path, description }]);
 
     loadFiles();
 }
@@ -84,7 +84,6 @@ async function loadFiles() {
 
         const info = meta.find(m => m.path === filePath);
 
-        // безопасный ID
         const safeId = file.name.replace(/[^a-zA-Z0-9_-]/g, "_");
 
         const div = document.createElement("div");
@@ -130,7 +129,11 @@ async function uploadPost() {
 
     if (file) {
         const path = `posts/${Date.now()}_${file.name}`;
-        await client.storage.from("posts").upload(path, file);
+
+        await client.storage.from("posts").upload(path, file, {
+            contentType: file.type
+        });
+
         fileUrl = client.storage.from("posts").getPublicUrl(path).data.publicUrl;
     }
 
@@ -228,9 +231,9 @@ async function loadPosts() {
         let media = "";
         if (post.file_url) {
             if (post.file_url.endsWith(".mp4")) {
-                media = `<video controls src="${post.file_url}"></video>`;
+                media = `<video controls src="${post.file_url}" style="width:100%; border-radius:10px;"></video>`;
             } else {
-                media = `<img src="${post.file_url}">`;
+                media = `<img src="${post.file_url}" style="width:100%; border-radius:10px;">`;
             }
         }
 
