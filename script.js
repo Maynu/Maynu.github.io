@@ -219,7 +219,7 @@ async function loadPosts() {
             <div id="commentForm_${post.id}" class="hidden" style="margin-top:10px;">
                 <input id="commentName_${post.id}" placeholder="Ваше имя">
                 <input id="commentText_${post.id}" placeholder="Ваш комментарий">
-                <button onclick="addComment(${post.id})">Отправить</button>
+                <button class="comment-toggle" onclick="addComment(${post.id})">Отправить</button>
             </div>
 
             ${isAdmin ? `<button class="delete-btn" onclick="deletePost(${post.id})">Удалить</button>` : ""}
@@ -228,19 +228,6 @@ async function loadPosts() {
         container.appendChild(div);
     });
 }
-
-// ===============================
-// Переключение вкладок
-// ===============================
-document.getElementById("tabPosts").onclick = () => {
-    document.getElementById("postsSection").classList.remove("hidden");
-    document.getElementById("filesSection").classList.add("hidden");
-};
-
-document.getElementById("tabFiles").onclick = () => {
-    document.getElementById("postsSection").classList.add("hidden");
-    document.getElementById("filesSection").classList.remove("hidden");
-};
 
 // ===============================
 // Старт
