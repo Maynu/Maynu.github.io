@@ -82,7 +82,7 @@ async function loadPosts() {
             ${media}
 
             <button class="comment-toggle" onclick="toggleCommentBox(${post.id})">
-                <img src="https://cdn-icons-png.flaticon.com/512/1380/1380338.png">
+                Комментарии
             </button>
 
             <div id="comment-box-${post.id}" class="comment-box hidden">
