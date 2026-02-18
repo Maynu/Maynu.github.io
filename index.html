@@ -16,7 +16,6 @@
         align-items: center;
     }
 
-    /* ВКЛАДКИ */
     .tabs {
         margin-top: 40px;
         display: flex;
@@ -33,16 +32,9 @@
         font-size: 15px;
         transition: 0.2s;
         user-select: none;
-
         background: #1c1c1c;
         border: 1px solid #333;
         color: #bfbfbf;
-    }
-
-    .tab:hover {
-        background: #2a2a2a;
-        border-color: #444;
-        color: white;
     }
 
     .tab.active {
@@ -51,41 +43,23 @@
         color: white;
     }
 
-    /* КОНТЕНТ */
     .content {
         margin-top: 30px;
         width: 90%;
         max-width: 700px;
     }
 
-    .post, .file-item {
+    .file-item, .post {
         background: #1A1A1A;
         padding: 16px;
         border-radius: 10px;
         margin-bottom: 12px;
     }
 
-    .post img, .post video {
-        width: 100%;
-        border-radius: 10px;
-        margin-top: 10px;
-    }
-
-    textarea, input {
-        width: 100%;
-        padding: 10px;
-        margin-top: 10px;
-        border-radius: 8px;
-        border: none;
-        background: #1c1c1c;
-        color: white;
-    }
-
-    /* КНОПКИ */
     .comment-toggle {
         background: #1c1c1c;
         border: 1px solid #333;
-        padding: 8px 14px;
+        padding: 6px 12px;
         border-radius: 6px;
         cursor: pointer;
         color: #bfbfbf;
@@ -99,24 +73,6 @@
         color: white;
     }
 
-    .comment-box {
-        background: #1A1A1A;
-        padding: 12px;
-        border-radius: 10px;
-        margin-top: 10px;
-    }
-
-    .comment {
-        background: #222;
-        padding: 10px;
-        border-radius: 8px;
-        margin-top: 10px;
-    }
-
-    .comment small {
-        opacity: 0.6;
-    }
-
     .delete-btn {
         background: red;
         padding: 5px 10px;
@@ -126,9 +82,17 @@
         margin-top: 5px;
     }
 
-    .hidden {
-        display: none;
+    input, textarea {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 8px;
+        border: none;
+        background: #1c1c1c;
+        color: white;
     }
+
+    .hidden { display: none; }
 </style>
 </head>
 <body>
@@ -155,6 +119,7 @@
     <div id="filesSection" class="hidden">
         <div id="adminUpload" class="hidden">
             <input type="file" id="fileInput">
+            <input id="fileDescription" placeholder="Описание файла">
             <button class="comment-toggle" onclick="uploadFile()">Загрузить файл</button>
         </div>
 
@@ -165,12 +130,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<!-- ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК -->
 <script>
+// Переключение вкладок
 document.getElementById("tabPosts").onclick = () => {
     document.getElementById("postsSection").classList.remove("hidden");
     document.getElementById("filesSection").classList.add("hidden");
-
     document.getElementById("tabPosts").classList.add("active");
     document.getElementById("tabFiles").classList.remove("active");
 };
@@ -178,7 +142,6 @@ document.getElementById("tabPosts").onclick = () => {
 document.getElementById("tabFiles").onclick = () => {
     document.getElementById("postsSection").classList.add("hidden");
     document.getElementById("filesSection").classList.remove("hidden");
-
     document.getElementById("tabFiles").classList.add("active");
     document.getElementById("tabPosts").classList.remove("active");
 };
