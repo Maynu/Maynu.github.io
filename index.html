@@ -1,106 +1,164 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <title>B2 Supabase</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body { font-family: sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background:#111; color:#eee; }
-    h1 { margin-bottom: 10px; }
-    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-    .tab-btn { padding: 8px 14px; border-radius: 6px; border: 1px solid #444; background:#222; color:#eee; cursor:pointer; }
-    .tab-btn.active { background:#4a90e2; border-color:#4a90e2; }
-    .tab-content { display:none; }
-    .tab-content.active { display:block; }
+<meta charset="UTF-8">
+<title>mrcloud</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    .card { border:1px solid #333; border-radius:8px; padding:10px 12px; margin-bottom:10px; background:#181818; }
-    .small { font-size: 12px; color:#aaa; }
-    input, textarea, button, select {
-      background:#222; color:#eee; border:1px solid #444; border-radius:6px; padding:6px 8px; margin:4px 0;
+<style>
+    body {
+        margin: 0;
+        background: #121212;
+        font-family: "Roboto", sans-serif;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
-    button { cursor:pointer; }
-    a { color:#4a90e2; word-break: break-all; }
-    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .row > * { flex:1 1 auto; }
-    .danger { color:#ff6b6b; }
-    .success { color:#6bff9b; }
-  </style>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+    .tabs {
+        margin-top: 40px;
+        display: flex;
+        gap: 10px;
+        background: #1E1E1E;
+        padding: 6px;
+        border-radius: 12px;
+    }
+
+    .tab {
+        padding: 10px 22px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 15px;
+        transition: 0.2s;
+        user-select: none;
+        background: #1c1c1c;
+        border: 1px solid #333;
+        color: #bfbfbf;
+    }
+
+    .tab.active {
+        background: #2962FF;
+        border-color: #2962FF;
+        color: white;
+    }
+
+    .content {
+        margin-top: 30px;
+        width: 90%;
+        max-width: 700px;
+    }
+
+    .post, .file-item, .comment {
+        background: #1A1A1A;
+        padding: 16px;
+        border-radius: 10px;
+        margin-bottom: 12px;
+    }
+
+    .comment-box {
+        background: #222;
+        padding: 12px;
+        border-radius: 10px;
+        margin-top: 10px;
+    }
+
+    textarea, input {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 8px;
+        border: none;
+        background: #1c1c1c;
+        color: white;
+    }
+
+    .comment-toggle {
+        background: #1c1c1c;
+        border: 1px solid #333;
+        padding: 8px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        color: #bfbfbf;
+        font-size: 13px;
+        transition: 0.2s;
+    }
+
+    .comment-toggle:hover {
+        background: #2a2a2a;
+        border-color: #444;
+        color: white;
+    }
+
+    .delete-btn {
+        background: red;
+        padding: 5px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        border: none;
+        margin-top: 5px;
+    }
+
+    .hidden { display: none; }
+</style>
 </head>
 <body>
-  <h1>B2 + Supabase</h1>
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="files">Файлы</button>
-    <button class="tab-btn" data-tab="posts">Посты</button>
-    <button class="tab-btn" data-tab="comments">Комментарии</button>
-    <button class="tab-btn" data-tab="admin">Админ</button>
-  </div>
 
-  <!-- ФАЙЛЫ -->
-  <div id="tab-files" class="tab-content active">
-    <h2>Файлы</h2>
-    <div class="card">
-      <div class="row">
-        <input type="file" id="fileInput" />
-        <input type="text" id="fileDescription" placeholder="Описание файла" />
-        <button id="uploadFileBtn">Загрузить</button>
-      </div>
-      <div id="fileUploadStatus" class="small"></div>
-    </div>
-    <div id="filesList"></div>
-  </div>
+<div class="tabs">
+    <div class="tab active" id="tabPosts">Публикации</div>
+    <div class="tab" id="tabFiles">Файлы</div>
+</div>
 
-  <!-- ПОСТЫ -->
-  <div id="tab-posts" class="tab-content">
-    <h2>Посты</h2>
-    <div class="card">
-      <textarea id="postText" rows="3" placeholder="Текст поста"></textarea>
-      <input type="text" id="postFileUrl" placeholder="URL файла (из вкладки Файлы)" />
-      <button id="createPostBtn">Создать пост</button>
-      <div id="postCreateStatus" class="small"></div>
-    </div>
-    <div id="postsList"></div>
-  </div>
+<div class="content">
 
-  <!-- КОММЕНТАРИИ -->
-  <div id="tab-comments" class="tab-content">
-    <h2>Комментарии</h2>
-    <div class="card">
-      <select id="commentPostSelect"></select>
-      <input type="text" id="commentName" placeholder="Имя" />
-      <textarea id="commentText" rows="2" placeholder="Текст комментария"></textarea>
-      <button id="addCommentBtn">Добавить комментарий</button>
-      <div id="commentAddStatus" class="small"></div>
-    </div>
-    <div id="commentsList"></div>
-  </div>
+    <!-- ПУБЛИКАЦИИ -->
+    <div id="postsSection">
+        <div id="adminPostUpload" class="hidden">
+            <textarea id="postText" placeholder="Текст публикации"></textarea>
+            <input type="file" id="postFile">
+            <button class="comment-toggle" onclick="uploadPost()">Опубликовать</button>
+        </div>
 
-  <!-- АДМИН -->
-  <div id="tab-admin" class="tab-content">
-    <h2>Админ</h2>
-    <div class="card">
-      <input type="password" id="adminPasswordInput" placeholder="Пароль (по умолчанию 1234)" />
-      <button id="checkAdminBtn">Войти</button>
-      <div id="adminStatus" class="small"></div>
+        <div id="postsList"></div>
     </div>
-    <div id="adminPanel" style="display:none;">
-      <div class="card">
-        <h3>Сменить пароль</h3>
-        <input type="password" id="newAdminPassword" placeholder="Новый пароль" />
-        <button id="changeAdminPasswordBtn">Сохранить</button>
-        <div id="adminPasswordChangeStatus" class="small"></div>
-      </div>
-      <div class="card">
-        <h3>Удаление постов</h3>
-        <div id="adminPostsList"></div>
-      </div>
-      <div class="card">
-        <h3>Удаление файлов</h3>
-        <div id="adminFilesList"></div>
-      </div>
-    </div>
-  </div>
 
-  <script src="script.js"></script>
+    <!-- ФАЙЛЫ -->
+    <div id="filesSection" class="hidden">
+        <div id="adminUpload" class="hidden">
+            <input type="file" id="fileInput">
+            <button class="comment-toggle" onclick="uploadFile()">Загрузить файл</button>
+        </div>
+
+        <div id="fileList"></div>
+    </div>
+
+</div>
+
+<!-- АДМИНКА -->
+<div style="margin-top:40px; width:90%; max-width:700px;">
+    <input id="adminPassword" placeholder="Пароль администратора" type="password">
+    <button class="comment-toggle" onclick="checkAdmin()">Войти</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
+
+<script>
+// Переключение вкладок
+document.getElementById("tabPosts").onclick = () => {
+    document.getElementById("postsSection").classList.remove("hidden");
+    document.getElementById("filesSection").classList.add("hidden");
+    document.getElementById("tabPosts").classList.add("active");
+    document.getElementById("tabFiles").classList.remove("active");
+};
+
+document.getElementById("tabFiles").onclick = () => {
+    document.getElementById("postsSection").classList.add("hidden");
+    document.getElementById("filesSection").classList.remove("hidden");
+    document.getElementById("tabFiles").classList.add("active");
+    document.getElementById("tabPosts").classList.remove("active");
+};
+</script>
+
 </body>
 </html>
