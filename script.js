@@ -31,8 +31,11 @@ document.addEventListener("keydown", async (e) => {
         if (pass === data.admin_password) {
             isAdmin = true;
             alert("Админ режим активирован");
+
+            // показываем скрытые элементы
             document.getElementById("adminPostUpload").classList.remove("hidden");
             document.getElementById("adminUpload").classList.remove("hidden");
+
             loadPosts();
             loadFiles();
         } else {
