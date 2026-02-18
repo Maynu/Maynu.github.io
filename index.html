@@ -16,6 +16,7 @@
         align-items: center;
     }
 
+    /* Tabs */
     .tabs {
         margin-top: 40px;
         display: flex;
@@ -38,12 +39,14 @@
         background: #2962FF;
     }
 
+    /* Content */
     .content {
         margin-top: 30px;
         width: 90%;
         max-width: 700px;
     }
 
+    /* Posts & Files */
     .post, .file-item {
         background: #1A1A1A;
         padding: 16px;
@@ -110,6 +113,7 @@
         opacity: 1;
     }
 
+    /* Меню комментариев */
     .comment-box {
         background: #1A1A1A;
         padding: 12px;
@@ -147,6 +151,7 @@
 
 <div class="content">
 
+    <!-- ПУБЛИКАЦИИ -->
     <div id="postsSection">
         <div id="adminPostUpload" class="hidden">
             <textarea id="postText" placeholder="Текст публикации"></textarea>
@@ -157,6 +162,7 @@
         <div id="postsList"></div>
     </div>
 
+    <!-- ФАЙЛЫ -->
     <div id="filesSection" class="hidden">
         <div id="adminUpload" class="hidden">
             <input type="file" id="fileInput">
