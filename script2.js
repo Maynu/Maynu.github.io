@@ -43,7 +43,7 @@ async function uploadPost() {
     let file_type = null;
 
     if (file) {
-        const path = `posts/${Date.now()}_${file.name}`;
+        const path = `files/${file.name}`;
 
         const { error: uploadError } = await client.storage
             .from("files")
