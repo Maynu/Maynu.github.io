@@ -84,6 +84,7 @@ async function loadFiles() {
 
         const info = meta.find(m => m.path === filePath);
 
+        // безопасный ID
         const safeId = file.name.replace(/[^a-zA-Z0-9_-]/g, "_");
 
         const div = document.createElement("div");
