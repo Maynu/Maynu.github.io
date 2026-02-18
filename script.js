@@ -9,7 +9,7 @@ const supabaseClient = supabase.createClient(
 let isAdmin = false;
 
 // ===============================
-// ОТКРЫТИЕ АДМИНКИ ПО CTRL + SHIFT + X
+// АДМИНКА ПО CTRL + SHIFT + X
 // ===============================
 document.addEventListener("keydown", async (e) => {
     if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "x") {
@@ -17,22 +17,16 @@ document.addEventListener("keydown", async (e) => {
 
         if (!pass) return;
 
-        const { data, error } = await supabaseClient
+        const { data } = await supabaseClient
             .from("admin_settings")
             .select("admin_password")
             .limit(1)
             .maybeSingle();
 
-        if (error || !data) {
-            alert("Ошибка проверки пароля");
-            return;
-        }
-
-        if (pass === data.admin_password) {
+        if (data && pass === data.admin_password) {
             isAdmin = true;
             alert("Админ режим активирован");
 
-            // показываем скрытые элементы
             document.getElementById("adminPostUpload").classList.remove("hidden");
             document.getElementById("adminUpload").classList.remove("hidden");
 
@@ -51,15 +45,10 @@ async function loadPosts() {
     const postsList = document.getElementById("postsList");
     postsList.innerHTML = "Загрузка...";
 
-    const { data, error } = await supabaseClient
+    const { data } = await supabaseClient
         .from("posts")
         .select("*")
         .order("created_at", { ascending: false });
-
-    if (error) {
-        postsList.innerHTML = "Ошибка загрузки постов";
-        return;
-    }
 
     postsList.innerHTML = "";
 
@@ -79,8 +68,15 @@ async function loadPosts() {
         div.innerHTML = `
             <div>${post.text}</div>
             ${media}
-            <button class="comment-toggle" onclick="toggleComments(${post.id})">Комментарии</button>
+
+            <div style="display:flex; gap:6px; margin-top:10px;">
+                <button class="comment-btn" onclick="toggleComments(${post.id})">Комментарии</button>
+                <button class="comment-btn" onclick="toggleCommentForm(${post.id})">Комментировать</button>
+            </div>
+
+            <div id="commentForm_${post.id}" class="hidden"></div>
             <div id="comments_${post.id}" class="hidden"></div>
+
             ${isAdmin ? `<button class="delete-btn" onclick="deletePost(${post.id})">Удалить</button>` : ""}
         `;
 
@@ -89,51 +85,30 @@ async function loadPosts() {
 }
 
 // ===============================
-// ПУБЛИКАЦИЯ ПОСТА
+// ФОРМА КОММЕНТАРИЯ
 // ===============================
-async function uploadPost() {
-    const text = document.getElementById("postText").value.trim();
-    const file = document.getElementById("postFile").files[0];
+function toggleCommentForm(postId) {
+    const form = document.getElementById(`commentForm_${postId}`);
 
-    if (!text && !file) {
-        alert("Добавь текст или файл");
+    if (!form.classList.contains("hidden")) {
+        form.classList.add("hidden");
+        form.innerHTML = "";
         return;
     }
 
-    let fileUrl = null;
+    form.classList.remove("hidden");
 
-    if (file) {
-        const filePath = `posts/${Date.now()}_${file.name}`;
-        const { error: uploadError } = await supabaseClient.storage
-            .from("posts")
-            .upload(filePath, file);
-
-        if (uploadError) {
-            alert("Ошибка загрузки файла");
-            return;
-        }
-
-        fileUrl = supabaseClient.storage.from("posts").getPublicUrl(filePath).data.publicUrl;
-    }
-
-    const { error } = await supabaseClient.from("posts").insert({
-        text,
-        file_url: fileUrl
-    });
-
-    if (error) {
-        alert("Ошибка публикации");
-        return;
-    }
-
-    document.getElementById("postText").value = "";
-    document.getElementById("postFile").value = "";
-
-    loadPosts();
+    form.innerHTML = `
+        <div class="comment-box">
+            <input id="name_${postId}" placeholder="Ваше имя">
+            <textarea id="text_${postId}" placeholder="Комментарий"></textarea>
+            <button class="comment-btn" onclick="addComment(${postId})">Отправить</button>
+        </div>
+    `;
 }
 
 // ===============================
-// КОММЕНТАРИИ
+// СПИСОК КОММЕНТАРИЕВ
 // ===============================
 async function toggleComments(postId) {
     const block = document.getElementById(`comments_${postId}`);
@@ -145,26 +120,15 @@ async function toggleComments(postId) {
     }
 
     block.classList.remove("hidden");
-    block.innerHTML = "Загрузка комментариев...";
+    block.innerHTML = "Загрузка...";
 
-    const { data, error } = await supabaseClient
+    const { data } = await supabaseClient
         .from("comments")
         .select("*")
         .eq("post_id", postId)
         .order("created_at", { ascending: false });
 
-    if (error) {
-        block.innerHTML = "Ошибка загрузки комментариев";
-        return;
-    }
-
-    block.innerHTML = `
-        <div class="comment-box">
-            <input id="name_${postId}" placeholder="Ваше имя">
-            <textarea id="text_${postId}" placeholder="Комментарий"></textarea>
-            <button class="comment-toggle" onclick="addComment(${postId})">Отправить</button>
-        </div>
-    `;
+    block.innerHTML = "";
 
     data.forEach(c => {
         const div = document.createElement("div");
@@ -178,6 +142,9 @@ async function toggleComments(postId) {
     });
 }
 
+// ===============================
+// ДОБАВЛЕНИЕ КОММЕНТАРИЯ
+// ===============================
 async function addComment(postId) {
     const name = document.getElementById(`name_${postId}`).value.trim() || "Аноним";
     const text = document.getElementById(`text_${postId}`).value.trim();
@@ -187,16 +154,11 @@ async function addComment(postId) {
         return;
     }
 
-    const { error } = await supabaseClient.from("comments").insert({
+    await supabaseClient.from("comments").insert({
         post_id: postId,
         name,
         text
     });
-
-    if (error) {
-        alert("Ошибка отправки комментария");
-        return;
-    }
 
     toggleComments(postId);
     toggleComments(postId);
@@ -208,12 +170,7 @@ async function addComment(postId) {
 async function deletePost(id) {
     if (!confirm("Удалить пост?")) return;
 
-    const { error } = await supabaseClient.from("posts").delete().eq("id", id);
-
-    if (error) {
-        alert("Ошибка удаления");
-        return;
-    }
+    await supabaseClient.from("posts").delete().eq("id", id);
 
     loadPosts();
 }
@@ -225,15 +182,10 @@ async function loadFiles() {
     const fileList = document.getElementById("fileList");
     fileList.innerHTML = "Загрузка...";
 
-    const { data, error } = await supabaseClient
+    const { data } = await supabaseClient
         .from("files_meta")
         .select("*")
         .order("created_at", { ascending: false });
-
-    if (error) {
-        fileList.innerHTML = "Ошибка загрузки файлов";
-        return;
-    }
 
     fileList.innerHTML = "";
 
@@ -263,27 +215,13 @@ async function uploadFile() {
 
     const filePath = `files/${Date.now()}_${file.name}`;
 
-    const { error: uploadError } = await supabaseClient.storage
-        .from("files")
-        .upload(filePath, file);
-
-    if (uploadError) {
-        alert("Ошибка загрузки файла");
-        return;
-    }
+    await supabaseClient.storage.from("files").upload(filePath, file);
 
     const publicUrl = supabaseClient.storage.from("files").getPublicUrl(filePath).data.publicUrl;
 
-    const { error } = await supabaseClient.from("files_meta").insert({
+    await supabaseClient.from("files_meta").insert({
         path: publicUrl
     });
-
-    if (error) {
-        alert("Ошибка записи в БД");
-        return;
-    }
-
-    document.getElementById("fileInput").value = "";
 
     loadFiles();
 }
