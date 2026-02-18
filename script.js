@@ -1,7 +1,7 @@
 // ===============================
 // Supabase
 // ===============================
-const supabase = supabase.createClient(
+const client = supabase.createClient(
     "https://atgmcttfsqpdhfdbfqkj.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0Z21jdHRmc3FwZGhmZGJmcWtqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNjg1NzMsImV4cCI6MjA4Njk0NDU3M30.VwGHqIXtsJZwA7hcpH2X1XrBDmT7TCt5xUgubhKB4Ns"
 );
@@ -48,17 +48,28 @@ async function uploadPost() {
     const text = document.getElementById("postText").value.trim();
     const file = document.getElementById("postFile").files[0];
 
+    if (!text && !file) return;
+
     let file_url = null;
     let file_type = null;
 
     if (file) {
         const path = `posts/${Date.now()}_${file.name}`;
-        await supabase.storage.from("files").upload(path, file);
-        file_url = supabase.storage.from("files").getPublicUrl(path).data.publicUrl;
+        const { error: uploadError } = await client.storage.from("files").upload(path, file);
+        if (uploadError) {
+            console.error("Ошибка загрузки файла поста:", uploadError);
+            return;
+        }
+        const { data: publicData } = client.storage.from("files").getPublicUrl(path);
+        file_url = publicData.publicUrl;
         file_type = file.type;
     }
 
-    await supabase.from("posts").insert([{ text, file_url, file_type }]);
+    const { error } = await client.from("posts").insert([{ text, file_url, file_type }]);
+    if (error) {
+        console.error("Ошибка сохранения поста:", error);
+        return;
+    }
 
     document.getElementById("postText").value = "";
     document.getElementById("postFile").value = "";
@@ -70,7 +81,15 @@ async function uploadPost() {
 // Загрузка постов
 // ===============================
 async function loadPosts() {
-    const { data } = await supabase.from("posts").select("*").order("id", { ascending: false });
+    const { data, error } = await client
+        .from("posts")
+        .select("*")
+        .order("id", { ascending: false });
+
+    if (error) {
+        console.error("Ошибка загрузки постов:", error);
+        return;
+    }
 
     const list = document.getElementById("postsList");
     list.innerHTML = "";
@@ -81,9 +100,9 @@ async function loadPosts() {
 
         let media = "";
         if (post.file_url) {
-            if (post.file_type.startsWith("image")) {
+            if (post.file_type && post.file_type.startsWith("image")) {
                 media = `<img src="${post.file_url}">`;
-            } else if (post.file_type.startsWith("video")) {
+            } else if (post.file_type && post.file_type.startsWith("video")) {
                 media = `<video controls src="${post.file_url}"></video>`;
             } else {
                 media = `<a href="${post.file_url}" target="_blank">📄 Скачать файл</a>`;
@@ -91,7 +110,7 @@ async function loadPosts() {
         }
 
         div.innerHTML = `
-            <p>${post.text}</p>
+            <p>${post.text || ""}</p>
             ${media}
             <div id="comments-${post.id}"></div>
 
@@ -109,22 +128,38 @@ async function loadPosts() {
 // Комментарии
 // ===============================
 async function addComment(postId) {
-    const nick = document.getElementById(`nick-${postId}`).value.trim();
-    const text = document.getElementById(`comment-${postId}`).value.trim();
+    const nickEl = document.getElementById(`nick-${postId}`);
+    const textEl = document.getElementById(`comment-${postId}`);
+
+    const nick = nickEl.value.trim();
+    const text = textEl.value.trim();
 
     if (!nick || !text) return;
 
-    await supabase.from("comments").insert([{ post_id: postId, text: `${nick}: ${text}` }]);
+    const { error } = await client
+        .from("comments")
+        .insert([{ post_id: postId, text: `${nick}: ${text}` }]);
 
+    if (error) {
+        console.error("Ошибка добавления комментария:", error);
+        return;
+    }
+
+    textEl.value = "";
     loadComments(postId);
 }
 
 async function loadComments(postId) {
-    const { data } = await supabase
+    const { data, error } = await client
         .from("comments")
         .select("*")
         .eq("post_id", postId)
         .order("id");
+
+    if (error) {
+        console.error("Ошибка загрузки комментариев:", error);
+        return;
+    }
 
     const block = document.getElementById(`comments-${postId}`);
     block.innerHTML = "";
@@ -144,7 +179,16 @@ async function loadComments(postId) {
 }
 
 async function deleteComment(id, postId) {
-    await supabase.from("comments").delete().eq("id", id);
+    const { error } = await client
+        .from("comments")
+        .delete()
+        .eq("id", id);
+
+    if (error) {
+        console.error("Ошибка удаления комментария:", error);
+        return;
+    }
+
     loadComments(postId);
 }
 
@@ -156,19 +200,33 @@ async function uploadFile() {
     if (!file) return;
 
     const path = `files/${Date.now()}_${file.name}`;
-    await supabase.storage.from("files").upload(path, file);
+    const { error } = await client.storage.from("files").upload(path, file);
+
+    if (error) {
+        console.error("Ошибка загрузки файла:", error);
+        return;
+    }
 
     loadFiles();
 }
 
 async function loadFiles() {
-    const { data } = await supabase.storage.from("files").list("files");
+    const { data, error } = await client.storage.from("files").list("files");
+
+    if (error) {
+        console.error("Ошибка загрузки списка файлов:", error);
+        return;
+    }
 
     const list = document.getElementById("fileList");
     list.innerHTML = "";
 
     data.forEach(f => {
-        const url = supabase.storage.from("files").getPublicUrl(`files/${f.name}`).data.publicUrl;
+        const { data: publicData } = client.storage
+            .from("files")
+            .getPublicUrl(`files/${f.name}`);
+
+        const url = publicData.publicUrl;
 
         const div = document.createElement("div");
         div.className = "file-item";
