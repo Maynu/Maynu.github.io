@@ -185,6 +185,22 @@ async function uploadFile() {
     loadFiles();
 }
 
+// УДАЛЕНИЕ ФАЙЛА
+async function deleteFile(filename) {
+    if (!confirm("Удалить файл?")) return;
+
+    const { error } = await client.storage
+        .from("files")
+        .remove([`files/${filename}`]);
+
+    if (error) {
+        alert("Ошибка удаления: " + error.message);
+        return;
+    }
+
+    loadFiles();
+}
+
 // загрузка списка файлов
 async function loadFiles() {
     const { data } = await client.storage.from("files").list("files");
@@ -201,10 +217,17 @@ async function loadFiles() {
 
         const div = document.createElement("div");
         div.className = "file-item";
-        div.innerHTML = `<p>${f.name}</p>`;
-        div.style.cursor = "pointer";
+        div.innerHTML = `
+            <p>${f.name}</p>
+            ${isAdmin ? `<button class="delete-btn" onclick="deleteFile('${f.name}')">Удалить</button>` : ""}
+        `;
 
-        div.onclick = () => window.open(url, "_blank");
+        div.style.cursor = "pointer";
+        div.onclick = (e) => {
+            if (e.target.tagName !== "BUTTON") {
+                window.open(url, "_blank");
+            }
+        };
 
         list.appendChild(div);
     });
