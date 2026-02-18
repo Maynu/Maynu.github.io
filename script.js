@@ -38,19 +38,19 @@ document.addEventListener("keydown", async (e) => {
 });
 
 // ===============================
-// ФОРМАТ ДАТЫ
+// ФОРМАТ ДАТЫ (как YouTube — "1 января")
 // ===============================
 function formatDate(dateString) {
     const date = new Date(dateString);
     const months = [
-        "января","февраля","марта","апреля","мая","июня",
-        "июля","августа","сентября","октября","ноября","декабря"
+        "января", "февраля", "марта", "апреля", "мая", "июня",
+        "июля", "августа", "сентября", "октября", "ноября", "декабря"
     ];
     return `${date.getDate()} ${months[date.getMonth()]}`;
 }
 
 // ===============================
-// ЗАГРУЗКА ПОСТОВ
+// ЗАГРУЗКА ПУБЛИКАЦИЙ
 // ===============================
 async function loadPosts() {
     const postsList = document.getElementById("postsList");
@@ -70,9 +70,9 @@ async function loadPosts() {
         let media = "";
         if (post.file_url) {
             if (post.file_url.endsWith(".mp4")) {
-                media = `<video controls src="${post.file_url}" class="post-media"></video>`;
+                media = `<video controls src="${post.file_url}" style="width:100%; border-radius:10px;"></video>`;
             } else {
-                media = `<img src="${post.file_url}" class="post-media">`;
+                media = `<img src="${post.file_url}" style="width:100%; border-radius:10px;">`;
             }
         }
 
@@ -80,7 +80,7 @@ async function loadPosts() {
             <div>${post.text}</div>
             ${media}
 
-            <div class="post-buttons">
+            <div style="display:flex; gap:6px; margin-top:10px;">
                 <button class="comment-btn" onclick="toggleComments(${post.id})">Комментарии</button>
                 <button class="comment-btn" onclick="toggleCommentForm(${post.id})">Комментировать</button>
             </div>
@@ -119,7 +119,7 @@ function toggleCommentForm(postId) {
 }
 
 // ===============================
-// КОММЕНТАРИИ (как YouTube)
+// СПИСОК КОММЕНТАРИЕВ (как YouTube, текст ровно под ником)
 // ===============================
 async function toggleComments(postId) {
     const block = document.getElementById(`comments_${postId}`);
@@ -143,17 +143,25 @@ async function toggleComments(postId) {
 
     data.forEach(c => {
         const div = document.createElement("div");
-        div.className = "yt-comment";
+        div.className = "comment";
 
         div.innerHTML = `
-            <div class="yt-comment-header">
-                <span class="yt-comment-name">${c.name}</span>
-                <span class="yt-comment-date">${formatDate(c.created_at)}</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <b style="font-size:14px;">${c.name}</b>
+                <span style="color:#888; font-size:12px;">${formatDate(c.created_at)}</span>
             </div>
 
-            <div class="yt-comment-text">
+            <div style="
+                white-space:pre-wrap;
+                font-size:14px;
+                margin-top:2px;
+                margin-left:0;
+                padding-left:0;
+            ">
                 ${c.text}
             </div>
+
+            <div style="height:12px;"></div>
         `;
 
         block.appendChild(div);
@@ -161,7 +169,7 @@ async function toggleComments(postId) {
 }
 
 // ===============================
-// ДОБАВИТЬ КОММЕНТАРИЙ
+// ДОБАВЛЕНИЕ КОММЕНТАРИЯ
 // ===============================
 async function addComment(postId) {
     const name = document.getElementById(`name_${postId}`).value.trim() || "Аноним";
@@ -217,7 +225,7 @@ async function deletePost(id) {
 }
 
 // ===============================
-// ЗАГРУЗКА ФАЙЛОВ
+// ЗАГРУЗКА ФАЙЛОВ (плитки + скачивание)
 // ===============================
 async function loadFiles() {
     const fileList = document.getElementById("fileList");
@@ -235,6 +243,7 @@ async function loadFiles() {
 
         const div = document.createElement("div");
         div.className = "file-item";
+        div.style.cursor = "pointer";
 
         div.innerHTML = `
             <div onclick="downloadFile('${file.path}')">
@@ -248,7 +257,7 @@ async function loadFiles() {
 }
 
 // ===============================
-// СКАЧАТЬ ФАЙЛ
+// СКАЧИВАНИЕ ФАЙЛА
 // ===============================
 function downloadFile(url) {
     const a = document.createElement("a");
@@ -260,7 +269,7 @@ function downloadFile(url) {
 }
 
 // ===============================
-// ЗАГРУЗИТЬ ФАЙЛ
+// ЗАГРУЗКА ФАЙЛА
 // ===============================
 async function uploadFile() {
     const file = document.getElementById("fileInput").files[0];
@@ -284,7 +293,7 @@ async function uploadFile() {
 }
 
 // ===============================
-// УДАЛИТЬ ФАЙЛ
+// УДАЛЕНИЕ ФАЙЛА
 // ===============================
 async function deleteFile(id, url) {
     if (!confirm("Удалить файл?")) return;
