@@ -199,7 +199,7 @@ async function deletePost(id) {
 }
 
 // ===============================
-// ЗАГРУЗКА ФАЙЛОВ
+// ЗАГРУЗКА ФАЙЛОВ (ПЛИТКИ + СКАЧИВАНИЕ)
 // ===============================
 async function loadFiles() {
     const fileList = document.getElementById("fileList");
@@ -213,16 +213,33 @@ async function loadFiles() {
     fileList.innerHTML = "";
 
     data.forEach(file => {
+        const fileName = file.path.split("/").pop();
+
         const div = document.createElement("div");
         div.className = "file-item";
+        div.style.cursor = "pointer";
 
         div.innerHTML = `
-            <a href="${file.path}" target="_blank">${file.path}</a>
+            <div onclick="downloadFile('${file.path}')">
+                📄 ${fileName}
+            </div>
             ${isAdmin ? `<button class="delete-btn" onclick="deleteFile(${file.id}, '${file.path}')">Удалить</button>` : ""}
         `;
 
         fileList.appendChild(div);
     });
+}
+
+// ===============================
+// СКАЧИВАНИЕ ФАЙЛА
+// ===============================
+function downloadFile(url) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = url.split("/").pop();
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
 }
 
 // ===============================
