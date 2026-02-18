@@ -16,6 +16,7 @@
         align-items: center;
     }
 
+    /* ВКЛАДКИ */
     .tabs {
         margin-top: 40px;
         display: flex;
@@ -32,6 +33,7 @@
         font-size: 15px;
         transition: 0.2s;
         user-select: none;
+
         background: #1c1c1c;
         border: 1px solid #333;
         color: #bfbfbf;
@@ -49,6 +51,7 @@
         color: white;
     }
 
+    /* ОСНОВНОЙ КОНТЕНТ */
     .content {
         margin-top: 30px;
         width: 90%;
@@ -78,6 +81,7 @@
         color: white;
     }
 
+    /* КНОПКИ */
     .comment-toggle {
         background: #1c1c1c;
         border: 1px solid #333;
@@ -162,7 +166,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-// Переключение вкладок
+/* ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК */
 document.getElementById("tabPosts").onclick = () => {
     document.getElementById("postsSection").classList.remove("hidden");
     document.getElementById("filesSection").classList.add("hidden");
