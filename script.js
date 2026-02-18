@@ -14,7 +14,6 @@ let isAdmin = false;
 document.addEventListener("keydown", async (e) => {
     if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === "x") {
         const pass = prompt("Введите пароль администратора:");
-
         if (!pass) return;
 
         const { data } = await supabaseClient
@@ -120,7 +119,7 @@ function toggleCommentForm(postId) {
 }
 
 // ===============================
-// СПИСОК КОММЕНТАРИЕВ (как YouTube)
+// СПИСОК КОММЕНТАРИЕВ (как YouTube, текст ровно под ником)
 // ===============================
 async function toggleComments(postId) {
     const block = document.getElementById(`comments_${postId}`);
@@ -147,14 +146,22 @@ async function toggleComments(postId) {
         div.className = "comment";
 
         div.innerHTML = `
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <div style="display:flex; align-items:center; gap:8px;">
                 <b style="font-size:14px;">${c.name}</b>
                 <span style="color:#888; font-size:12px;">${formatDate(c.created_at)}</span>
             </div>
 
-            <div style="white-space:pre-wrap; font-size:14px; margin-bottom:14px;">
+            <div style="
+                white-space:pre-wrap;
+                font-size:14px;
+                margin-top:2px;
+                margin-left:0;
+                padding-left:0;
+            ">
                 ${c.text}
             </div>
+
+            <div style="height:12px;"></div>
         `;
 
         block.appendChild(div);
