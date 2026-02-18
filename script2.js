@@ -1,4 +1,4 @@
-console.log("SCRIPT2 LOADED");
+console.log("SCRIPT2 LOADED — CACHE BYPASSED");
 
 const client = supabase.createClient(
     "https://atgmcttfsqpdhfdbfqkj.supabase.co",
@@ -44,7 +44,16 @@ async function uploadPost() {
 
     if (file) {
         const path = `posts/${Date.now()}_${file.name}`;
-        await client.storage.from("files").upload(path, file);
+
+        const { error: uploadError } = await client.storage
+            .from("files")
+            .upload(path, file);
+
+        if (uploadError) {
+            alert("Ошибка загрузки файла: " + uploadError.message);
+            return;
+        }
+
         const { data } = client.storage.from("files").getPublicUrl(path);
         file_url = data.publicUrl;
         file_type = file.type;
