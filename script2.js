@@ -201,10 +201,10 @@ async function loadFiles() {
 
         const div = document.createElement("div");
         div.className = "file-item";
-        div.innerHTML = `
-            <p>${f.name}</p>
-            <a href="${url}" target="_blank">Открыть</a>
-        `;
+        div.innerHTML = `<p>${f.name}</p>`;
+        div.style.cursor = "pointer";
+
+        div.onclick = () => window.open(url, "_blank");
 
         list.appendChild(div);
     });
