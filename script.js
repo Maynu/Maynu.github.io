@@ -59,9 +59,9 @@ async function loadPosts() {
         let media = "";
         if (post.file_url) {
             if (post.file_url.endsWith(".mp4")) {
-                media = `<video controls src="${post.file_url}"></video>`;
+                media = `<video controls src="${post.file_url}" style="width:100%; border-radius:10px;"></video>`;
             } else {
-                media = `<img src="${post.file_url}">`;
+                media = `<img src="${post.file_url}" style="width:100%; border-radius:10px;">`;
             }
         }
 
@@ -162,6 +162,29 @@ async function addComment(postId) {
 
     toggleComments(postId);
     toggleComments(postId);
+}
+
+// ===============================
+// ЗАГРУЗКА ПОСТА (ТЕКСТ + ВИДЕО/ФОТО)
+// ===============================
+async function uploadPost() {
+    const text = document.getElementById("postText").value.trim();
+    const file = document.getElementById("postFile").files[0];
+
+    let fileUrl = null;
+
+    if (file) {
+        const filePath = `posts/${Date.now()}_${file.name}`;
+        await supabaseClient.storage.from("posts").upload(filePath, file);
+        fileUrl = supabaseClient.storage.from("posts").getPublicUrl(filePath).data.publicUrl;
+    }
+
+    await supabaseClient.from("posts").insert({
+        text: text,
+        file_url: fileUrl
+    });
+
+    loadPosts();
 }
 
 // ===============================
