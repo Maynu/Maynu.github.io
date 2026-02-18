@@ -2,9 +2,10 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>mrcloud</title>
+<title>mr-cloud</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<!-- Material Icons -->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
 <style>
@@ -18,6 +19,7 @@
         align-items: center;
     }
 
+    /* Tabs */
     .tabs {
         margin-top: 40px;
         display: flex;
@@ -40,12 +42,14 @@
         background: #2962FF;
     }
 
+    /* Content */
     .content {
         margin-top: 30px;
         width: 90%;
         max-width: 700px;
     }
 
+    /* Posts & Files */
     .post, .file-item {
         background: #1A1A1A;
         padding: 16px;
@@ -77,6 +81,39 @@
         cursor: pointer;
     }
 
+    .hidden {
+        display: none;
+    }
+
+    /* Минималистичная кнопка комментариев */
+    .comment-toggle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #1E1E1E;
+        border: 1px solid #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #ccc;
+        font-size: 20px;
+        margin-top: 10px;
+        transition: 0.2s;
+    }
+
+    .comment-toggle:hover {
+        background: #333;
+    }
+
+    /* Меню комментариев */
+    .comment-box {
+        background: #1A1A1A;
+        padding: 12px;
+        border-radius: 10px;
+        margin-top: 10px;
+    }
+
     .comment {
         background: #222;
         padding: 10px;
@@ -96,19 +133,17 @@
         border: none;
         margin-top: 5px;
     }
-
-    .hidden {
-        display: none;
-    }
 </style>
 </head>
 <body>
 
+<!-- Tabs -->
 <div class="tabs">
     <div class="tab active" id="tabPosts">Публикации</div>
     <div class="tab" id="tabFiles">Файлы</div>
 </div>
 
+<!-- Content -->
 <div class="content">
 
     <!-- ПУБЛИКАЦИИ -->
@@ -134,7 +169,10 @@
 
 </div>
 
+<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<!-- Наш JS -->
 <script defer src="script.js"></script>
 
 </body>
